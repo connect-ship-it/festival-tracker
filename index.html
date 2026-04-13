@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Against All Odds — Festival Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f8f7f4;--surface:#fff;--border:#e2e0dc;--text:#1a1a1a;--text2:#666;
+  --accent:#2d5a27;--accent-light:#e8f0e6;
+  --status-not:#94a3b8;--status-applied:#3b82f6;--status-short:#f59e0b;
+  --status-selected:#10b981;--status-passed:#ef4444;
+  --pri-high:#dc2626;--pri-med:#f59e0b;--pri-low:#6b7280;
+  --radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.app{max-width:1400px;margin:0 auto;padding:16px 24px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:12px}
+header h1{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+header h1 span{color:var(--accent);font-weight:400;font-size:.85rem;margin-left:8px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:.8rem;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{border-color:#999}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#234a1e}
+.btn-danger{color:#dc2626;border-color:#fca5a5}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+
+/* Dashboard */
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-card .value{font-size:1.8rem;font-weight:700;color:var(--accent)}
+.stat-card .label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.stat-card.highlight{border-left:3px solid var(--accent)}
+
+/* Tabs */
+.tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border)}
+.tab{padding:10px 20px;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab .count{background:var(--accent-light);color:var(--accent);font-size:.7rem;padding:1px 7px;border-radius:10px;margin-left:6px}
+
+/* Filters */
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:.8rem;background:var(--surface);outline:none}
+.filters select:focus,.filters input:focus{border-color:var(--accent)}
+.filters input[type=text]{width:220px}
+.sort-btn{font-size:.7rem;padding:4px 10px;border-radius:12px;background:var(--accent-light);border:none;cursor:pointer;color:var(--accent);font-weight:500}
+.sort-btn.active{background:var(--accent);color:#fff}
+
+/* Table */
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:#fafaf8;padding:10px 12px;text-align:left;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);border-bottom:1px solid var(--border);position:sticky;top:0;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text)}
+th .sort-arrow{margin-left:3px;opacity:.3}
+th.sorted .sort-arrow{opacity:1;color:var(--accent)}
+td{padding:9px 12px;border-bottom:1px solid #f0efed;vertical-align:top}
+tr:hover{background:#fafaf8}
+tr:last-child td{border-bottom:none}
+
+/* Status badge */
+.status-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:500;white-space:nowrap}
+.status-not-applied{background:#f1f5f9;color:#475569}
+.status-applied{background:#dbeafe;color:#1d4ed8}
+.status-shortlisted{background:#fef3c7;color:#92400e}
+.status-selected{background:#d1fae5;color:#065f46}
+.status-deadline-passed{background:#fee2e2;color:#991b1b}
+
+/* Priority */
+.priority-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-size:.75rem;font-weight:700;color:#fff}
+.pri-high{background:var(--pri-high)}
+.pri-med{background:var(--pri-med)}
+.pri-low{background:var(--pri-low)}
+
+/* Tier */
+.tier-badge{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:4px}
+.tier-a{background:#fef3c7;color:#92400e}
+.tier-b{background:#f1f5f9;color:#475569}
+
+/* Oscar */
+.oscar-yes{color:#f59e0b;font-weight:600}
+.oscar-no{color:#ccc}
+
+/* Status dropdown */
+.status-select{padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:.75rem;cursor:pointer;background:transparent}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:12px;padding:24px;width:90%;max-width:680px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:1.1rem;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:.75rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em}
+.form-group input,.form-group select,.form-group textarea{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;outline:none;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* Responsive */
+@media(max-width:768px){
+  .app{padding:12px}
+  .dashboard{grid-template-columns:repeat(3,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .filters{flex-direction:column;align-items:stretch}
+  .filters select,.filters input{width:100%}
+}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty p{font-size:.9rem}
+
+/* Clickable link */
+.link-cell a{color:var(--accent);text-decoration:none;font-size:.75rem}
+.link-cell a:hover{text-decoration:underline}
+
+/* Notes tooltip */
+.notes-cell{max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:help}
+.notes-cell:hover{white-space:normal;overflow:visible;position:relative;z-index:10;background:var(--surface);box-shadow:0 4px 12px rgba(0,0,0,.15);border-radius:4px;padding:8px}
+
+/* Decision badge */
+.decision-skip{color:#dc2626;font-weight:600;font-size:.72rem}
+.decision-apply{color:#16a34a;font-weight:600;font-size:.72rem}
+.decision-low{color:#f59e0b;font-weight:600;font-size:.72rem}
+
+/* Deadline warning */
+.deadline-soon{color:#dc2626;font-weight:600}
+.deadline-ok{color:var(--text)}
+.deadline-passed{color:#94a3b8;text-decoration:line-through}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:200;opacity:0;transform:translateY(10px);transition:all .3s}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* Visibility */
+.vis-high{color:#16a34a;font-weight:500;font-size:.72rem}
+.vis-med{color:#f59e0b;font-weight:500;font-size:.72rem}
+.vis-low{color:#94a3b8;font-weight:500;font-size:.72rem}
+
+/* Film info bar */
+.film-bar{background:var(--accent);color:#fff;padding:8px 16px;border-radius:var(--radius);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;flex-wrap:wrap;gap:6px}
+.film-bar strong{font-weight:600}
+.film-bar span{opacity:.85;font-size:.75rem}
+
+/* Checkbox column */
+.actions-cell{white-space:nowrap}
+
+/* This Month Deadlines Panel */
+.month-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+.month-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.month-panel-header h2{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.month-panel-header h2 .month-icon{width:28px;height:28px;background:var(--accent);color:#fff;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.month-panel-header .month-count{background:#fee2e2;color:#991b1b;font-size:.72rem;padding:2px 10px;border-radius:10px;font-weight:600}
+.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.month-card{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;transition:all .15s;display:flex;flex-direction:column;gap:6px}
+.month-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.month-card.urgent{border-left:3px solid #dc2626}
+.month-card.soon{border-left:3px solid #f59e0b}
+.month-card.comfortable{border-left:3px solid #10b981}
+.month-card .mc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.month-card .mc-name{font-weight:600;font-size:.85rem;flex:1}
+.month-card .mc-type-badge{font-size:.65rem;padding:1px 7px;border-radius:10px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.mc-type-nat{background:#e0f2fe;color:#0369a1}
+.mc-type-int{background:#fce7f3;color:#be185d}
+.month-card .mc-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:.75rem;color:var(--text2)}
+.month-card .mc-meta span{display:inline-flex;align-items:center;gap:3px}
+.month-card .mc-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
+.month-card .mc-deadline{font-size:.82rem;font-weight:600}
+.month-card .mc-countdown{font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:12px}
+.mc-countdown.overdue{background:#fee2e2;color:#991b1b}
+.mc-countdown.critical{background:#fee2e2;color:#dc2626}
+.mc-countdown.warning{background:#fef3c7;color:#92400e}
+.mc-countdown.ok{background:#d1fae5;color:#065f46}
+.month-card .mc-status{font-size:.72rem}
+.month-card .mc-fee{font-weight:600;font-size:.8rem}
+.month-empty{text-align:center;padding:30px;color:var(--text2);font-size:.85rem}
+.month-panel-toggle{cursor:pointer;user-select:none}
+.month-panel-toggle:hover{opacity:.8}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Against All Odds <span>Festival Tracker</span></h1>
+    <div class="header-actions">
+      <button class="btn" onclick="exportData()">Export JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-primary" onclick="openModal()">+ Add Festival</button>
+    </div>
+  </header>
+
+  <div class="film-bar">
+    <div><strong>Documentary:</strong> Against All Odds &mdash; Software founders from unexpected districts of India</div>
+    <span>Funded by Shifu Foundation &bull; Curious Men Films</span>
+  </div>
+
+  <div class="dashboard" id="dashboard"></div>
+
+  <div class="month-panel" id="monthPanel"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="national" onclick="switchTab('national')">National <span class="count" id="natCount">0</span></div>
+    <div class="tab" data-tab="international" onclick="switchTab('international')">International <span class="count" id="intCount">0</span></div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="searchInput" placeholder="Search festivals..." oninput="render()">
+    <select id="filterStatus" onchange="render()">
+      <option value="">All Statuses</option>
+      <option>Not applied</option>
+      <option>Applied</option>
+      <option>Shortlisted</option>
+      <option>Selected</option>
+      <option>Deadline Passed</option>
+    </select>
+    <select id="filterTier" onchange="render()">
+      <option value="">All Tiers</option>
+      <option>A-list</option>
+      <option>B</option>
+    </select>
+    <select id="filterRegion" onchange="render()"></select>
+    <select id="filterOscar" onchange="render()">
+      <option value="">Oscar Qualifying</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <span style="font-size:.75rem;color:var(--text2);align-self:center">Sort:</span>
+      <button class="sort-btn active" data-sort="priority" onclick="setSort('priority')">Priority</button>
+      <button class="sort-btn" data-sort="earlyDeadline" onclick="setSort('earlyDeadline')">Deadline</button>
+      <button class="sort-btn" data-sort="fee" onclick="setSort('fee')">Fee</button>
+      <button class="sort-btn" data-sort="name" onclick="setSort('name')">Name</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modalTitle">Add Festival</h2>
+    <div class="form-grid" id="modalForm"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="deleteBtn" style="display:none" onclick="deleteFestival()">Delete</button>
+      <button class="btn btn-primary" onclick="saveFestival()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'ffn_festivals';
+let currentTab = 'national';
+let currentSort = 'priority';
+let sortDir = 1; // 1=asc, -1=desc
+let editingId = null;
+
+const STATUS_OPTIONS = ['Not applied','Applied','Shortlisted','Selected','Deadline Passed'];
+const TIER_OPTIONS = ['A-list','B'];
+const VISIBILITY_OPTIONS = ['High','Medium-High','Medium','Low-Medium','Low'];
+
+// Default data seeded from Excel
+const DEFAULT_NATIONAL = [
+  {id:genId(),type:'national',name:"IFFI \u2014 Int'l Film Festival of India (Indian Panorama)",state:"Goa",region:"India",tier:"A-list",focus:"Documentary under Non Feature film",deadlineMonth:"",earlyDeadline:"2026-04-18",lateDeadline:"2026-08-25",fee:0,status:"Not applied",priority:9,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 iffigoa.org",docsRequired:"Online application form, director bio, synopsis, screener link, production stills",regLink:"https://www.iffigoa.org/indian-panorama/indian-panorama-rules-regulations",notes:"Deadline for Indian Panorama is typically mid-August. CBFC certificate not mandatory at entry stage. Only FIAPF-accredited festival in South Asia.",oscar:"No",visibility:"High",decision:"\u2705 Priority Apply",rationale:"Only FIAPF-accredited festival in South Asia. Indian Panorama is a top national credential. Free.",website:"https://www.iffigoa.org/"},
+  {id:genId(),type:'national',name:"MAMI \u2014 Mumbai Film Festival",state:"Mumbai",region:"India",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-06-01",lateDeadline:"2026-07-01",fee:0,status:"Not applied",priority:9,premiereRequired:"No",categoryApplied:"",platform:"mumbaifilmfestival.com",docsRequired:"Director statement, synopsis, stills, screener link, bio",regLink:"",notes:"India's most industry-connected festival. Netflix, Amazon, Mubi scouts attend. Best for domestic OTT deal visibility.",oscar:"No",visibility:"High",decision:"\u2705 Priority Apply",rationale:"India's most industry-connected festival. OTT scouts attend. Free.",website:"https://www.mumbaifilmfestival.com/"},
+  {id:genId(),type:'national',name:"IFFK \u2014 Kerala Int'l Film Festival",state:"Thiruvananthapuram",region:"India",tier:"B",focus:"General + Doc",deadlineMonth:"April'26",earlyDeadline:"2026-04-15",lateDeadline:"",fee:80,status:"Deadline Passed",priority:8,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 keralaiff.com",docsRequired:"Online entry form, screener, director bio, synopsis, stills",regLink:"",notes:"India's most discerning audience. One of India's top 3 festivals.",oscar:"No",visibility:"Medium-High",decision:"\u2705 Apply",rationale:"India's most discerning audience. Deeply engaged cinephile crowd.",website:"https://iffk.in/"},
+  {id:genId(),type:'national',name:"BIFFes \u2014 Bengaluru Int'l Film Festival",state:"Bengaluru",region:"India",tier:"A-list",focus:"General + Doc",deadlineMonth:"",earlyDeadline:"",lateDeadline:"",fee:70,status:"Deadline Passed",priority:8,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 biffes.in",docsRequired:"Entry form, screener link, bio, synopsis, stills",regLink:"",notes:"Home festival for Curious Men Films. Bengaluru startup/tech community is perfect audience.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Home festival. Government-backed. Bengaluru startup/tech community is perfect audience.",website:"https://www.biffes.org/"},
+  {id:genId(),type:'national',name:"Kolkata IFF (KIFF)",state:"Kolkata",region:"India",tier:"A-list",focus:"General",deadlineMonth:"",earlyDeadline:"2026-07-01",lateDeadline:"2026-08-01",fee:0,status:"Not applied",priority:8,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 kff.in",docsRequired:"Online form, screener, director bio, synopsis",regLink:"",notes:"One of Asia's oldest festivals. Deeply engaged intellectual audience. Strong for social documentaries.",oscar:"No",visibility:"Medium-High",decision:"\u2705 Apply",rationale:"One of Asia's oldest festivals. Free. Deeply engaged intellectual audience.",website:"https://kiff.in/"},
+  {id:genId(),type:'national',name:"IFFD \u2014 Int'l Film Festival Delhi",state:"New Delhi",region:"India",tier:"A-list",focus:"General",deadlineMonth:"",earlyDeadline:"2025-12-01",lateDeadline:"",fee:0,status:"Deadline Passed",priority:8,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener, bio, synopsis",regLink:"",notes:"Inaugural 2026 edition. Free. Government-backed (Delhi Tourism). Watch for 2027 cycle.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Inaugural 2026 edition. Free. Government-backed.",website:"https://www.iffdelhi.com/"},
+  {id:genId(),type:'national',name:"DIFF \u2014 Dharamshala Int'l Film Festival",state:"Dharamshala HP",region:"India",tier:"B",focus:"General",deadlineMonth:"",earlyDeadline:"2026-06-01",lateDeadline:"2026-07-01",fee:0,status:"Not applied",priority:7,premiereRequired:"No",categoryApplied:"",platform:"",docsRequired:"Entry form, screener link, bio, synopsis, stills",regLink:"",notes:"No competition or awards \u2014 pure curation. Founded by Ritu Sarin and Tenzing Sonam. Strong indie doc reputation.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"No competition \u2014 pure curation. Free. Strong indie doc reputation.",website:"https://diff.co.in/"},
+  {id:genId(),type:'national',name:"Pune IFF (PIFF)",state:"Pune",region:"India",tier:"A-list",focus:"General",deadlineMonth:"",earlyDeadline:"2026-09-01",lateDeadline:"2026-10-01",fee:0,status:"Not applied",priority:7,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 piffindia.com",docsRequired:"Entry form, screener, director bio, synopsis",regLink:"",notes:"Government-backed, strong academic audience. Good for entrepreneurship-themed docs.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Government-backed, strong academic audience. Low fee.",website:"https://www.piffindia.com/"},
+  {id:genId(),type:'national',name:"Jaipur IFF (JIFF)",state:"Jaipur",region:"India",tier:"B",focus:"General + Doc",deadlineMonth:"",earlyDeadline:"2026-08-15",lateDeadline:"2026-12-10",fee:65,status:"Not applied",priority:5,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener link, bio",regLink:"https://jiffindia.org/entryform.html",notes:"Rolling submissions. Good for early momentum and laurels.",oscar:"No",visibility:"Low-Medium",decision:"Low priority",rationale:"Fee ($65) high relative to return. Apply only if budget allows.",website:"https://www.jiffindia.org/"},
+  {id:genId(),type:'national',name:"Delhi Int'l Film Festival",state:"New Delhi",region:"India",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-06-16",lateDeadline:"2026-12-10",fee:55,status:"Not applied",priority:4,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener",regLink:"",notes:"Low barrier but also low return. Good for testing materials.",oscar:"No",visibility:"Low",decision:"Low priority",rationale:"Low barrier, low return. $55 fee is mid-range for what you get.",website:"http://www.delhiinternationalfilmfestival.com/"},
+  {id:genId(),type:'national',name:"NDFF \u2014 New Delhi Film Festival",state:"New Delhi",region:"India",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-06-16",lateDeadline:"2026-12-10",fee:50,status:"Not applied",priority:5,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener, bio, synopsis",regLink:"",notes:"Growing festival at India International Centre. Good Delhi audience \u2014 academics, diplomats.",oscar:"No",visibility:"Low-Medium",decision:"Apply if free / low",rationale:"Growing festival. Good Delhi audience.",website:"https://ndffindia.org/"},
+  {id:genId(),type:'national',name:"MIDSFF \u2014 Madurai Int'l Documentary & Short Film Festival",state:"Madurai TN",region:"India",tier:"A-list",focus:"Documentary",deadlineMonth:"June'26",earlyDeadline:"2026-06-01",lateDeadline:"2026-07-01",fee:50,status:"Not applied",priority:7,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener, bio, synopsis",regLink:"",notes:"Oldest dedicated doc festival in India (since 1998). Pure documentary focus.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Oldest dedicated doc festival in India. Pure documentary focus.",website:"https://filmfreeway.com/MaduraiFilmFestival"},
+  {id:genId(),type:'national',name:"MSDFF \u2014 Mumbai Short & Documentary Film Festival",state:"Mumbai",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"",lateDeadline:"2026-09-15",fee:0,status:"Not applied",priority:7,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener, bio",regLink:"",notes:"Free. Social justice / human interest sections align well with entrepreneurship theme.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Free. Dedicated doc and short film festival. Social justice sections fit.",website:"https://msdffest.com/"},
+  {id:genId(),type:'national',name:"Smita Patil Documentary & Short Film Festival",state:"Pune",region:"India",tier:"B",focus:"Biography + Doc",deadlineMonth:"",earlyDeadline:"",lateDeadline:"",fee:0,status:"Deadline Passed",priority:5,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 spiffpune.in",docsRequired:"Entry form, screener, bio",regLink:"",notes:"Free. Named festival with credible legacy. Pure doc focus. Watch for next cycle.",oscar:"No",visibility:"Low-Medium",decision:"Apply if open",rationale:"Free. Named festival with credible legacy.",website:"https://spiffpune.com/"},
+  {id:genId(),type:'national',name:"ICFF \u2014 Indian Cine Film Festival",state:"Mumbai",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"April'26",earlyDeadline:"2026-04-07",lateDeadline:"2026-08-25",fee:79,status:"Not applied",priority:3,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener",regLink:"",notes:"Rolling award model, no named jury, vanity-adjacent. $79 fee unjustifiable.",oscar:"No",visibility:"Low",decision:"Skip / Low priority",rationale:"Rolling award model, vanity-adjacent. $79 fee unjustifiable vs return.",website:"https://filmfreeway.com/IndianCineFilmFestival"},
+  {id:genId(),type:'national',name:"IWFF \u2014 Indian World Film Festival",state:"Hyderabad",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"April'26",earlyDeadline:"2026-04-11",lateDeadline:"2027-02-15",fee:43,status:"Not applied",priority:3,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener",regLink:"",notes:"Legitimate but small. Good for Hyderabad visibility only.",oscar:"No",visibility:"Low",decision:"Low priority",rationale:"Legitimate but small. Low fee justifies a try.",website:"https://filmfreeway.com/IndianWorldFilmFestival"},
+  {id:genId(),type:'national',name:"F5IFF \u2014 Fest5 International Film Festival",state:"Multiple cities",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"April'26",earlyDeadline:"2026-04-22",lateDeadline:"2026-07-22",fee:17,status:"Not applied",priority:3,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway / Vendr",docsRequired:"Entry form, screener",regLink:"",notes:"Legitimate multi-city festival, very low fee ($17). Accepts 30\u2013240 min docs.",oscar:"No",visibility:"Low",decision:"Low priority",rationale:"Legitimate multi-city festival. Very low fee. Early laurels only.",website:"https://www.f5iff.com/"},
+  {id:genId(),type:'national',name:"Jio MAMI Short Film Festival",state:"Mumbai",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"",lateDeadline:"",fee:30,status:"Not applied",priority:6,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 mamindia.com",docsRequired:"Entry form, screener, bio",regLink:"",notes:"Strong MAMI brand. Only eligible if documentary is under 40 minutes.",oscar:"No",visibility:"Medium-High",decision:"\u2705 Apply (if under 40 min)",rationale:"Strong MAMI brand. Good for industry visibility.",website:"https://www.mumbaifilmfestival.com/"},
+  {id:genId(),type:'national',name:"NYIFF \u2014 New York Indian Film Festival",state:"New York",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2027-02-01",lateDeadline:"2027-03-01",fee:45,status:"Not applied",priority:6,premiereRequired:"No",categoryApplied:"",platform:"FilmFreeway",docsRequired:"Entry form, screener, director bio, synopsis",regLink:"",notes:"Only Indian diaspora festival in the US. Good for US profile.",oscar:"No",visibility:"High",decision:"\u2705 Apply",rationale:"Only Indian diaspora festival in the US. Opens US profile.",website:"https://www.nyiff.us/"},
+  {id:genId(),type:'national',name:"IDSFFK \u2014 Int'l Documentary & Short Film Festival of Kerala",state:"Thiruvananthapuram",region:"India",tier:"B",focus:"Documentary",deadlineMonth:"May'26",earlyDeadline:"2026-05-10",lateDeadline:"",fee:20,status:"Not applied",priority:7,premiereRequired:"No",categoryApplied:"",platform:"Direct \u2014 idsffk.in",docsRequired:"Entry form, screener, bio, synopsis",regLink:"",notes:"Kerala government-backed, dedicated documentary festival. 18th edition. Confirmed May 10 deadline.",oscar:"No",visibility:"Medium",decision:"\u2705 Apply",rationale:"Kerala government-backed. Strong doc community. Low fee.",website:"https://idsffk.in/"},
+  {id:genId(),type:'national',name:"India Movie Awards",state:"Kolkata",region:"India",tier:"B",focus:"",deadlineMonth:"April'26",earlyDeadline:"",lateDeadline:"2026-04-08",fee:20,status:"Not applied",priority:1,premiereRequired:"",categoryApplied:"",platform:"FilmFreeway",docsRequired:"",regLink:"https://filmfreeway.com/INDIANMOVIEAWARDS",notes:"RED FLAG: No edition history, no named jury, mimics award brand.",oscar:"",visibility:"",decision:"\u274c Skip",rationale:"RED FLAG: No edition history, no named jury.",website:"https://filmfreeway.com/INDIANMOVIEAWARDS"},
+  {id:genId(),type:'national',name:"ASIAN INTERNATIONAL FILMFARE AWARDS",state:"West Bengal",region:"India",tier:"B",focus:"",deadlineMonth:"April'26",earlyDeadline:"2027-04-05",lateDeadline:"2027-04-06",fee:0,status:"Not applied",priority:1,premiereRequired:"",categoryApplied:"",platform:"FilmFreeway",docsRequired:"",regLink:"https://filmfreeway.com/ASIANINTERNATIONALFILMFAREAWARDS",notes:"RED FLAG: Deadlines span 2027\u20132029. Classic vanity award structure. Name mimics Filmfare.",oscar:"",visibility:"",decision:"\u274c Skip",rationale:"RED FLAG: Vanity award structure.",website:"https://filmfreeway.com/ASIANINTERNATIONALFILMFAREAWARDS"},
+  {id:genId(),type:'national',name:"Delhi Shorts International Film Festival",state:"Delhi",region:"India",tier:"B",focus:"",deadlineMonth:"April'26",earlyDeadline:"2026-04-19",lateDeadline:"2026-10-05",fee:46,status:"Not applied",priority:2,premiereRequired:"",categoryApplied:"",platform:"FilmFreeway",docsRequired:"",regLink:"https://filmfreeway.com/delhi-shorts-international-film-festival",notes:"No verifiable edition history, no jury information publicly available.",oscar:"",visibility:"",decision:"\u274c Skip",rationale:"RED FLAG: No verifiable history. Low trust.",website:"https://filmfreeway.com/delhi-shorts-international-film-festival"},
+  {id:genId(),type:'national',name:"INDIA CHICAGO INTERNATIONAL FILM FESTIVAL (ICIFF)",state:"Kolkata",region:"India",tier:"B",focus:"",deadlineMonth:"April'26",earlyDeadline:"2026-04-11",lateDeadline:"2026-04-12",fee:20,status:"Not applied",priority:1,premiereRequired:"",categoryApplied:"",platform:"FilmFreeway",docsRequired:"",regLink:"https://filmfreeway.com/INDIACHICAGOINTERNATIONALFILMFESTIVAL",notes:"RED FLAG: No verifiable history, misleading name.",oscar:"",visibility:"",decision:"\u274c Skip",rationale:"RED FLAG: Misleading name, no verifiable history.",website:"https://filmfreeway.com/INDIACHICAGOINTERNATIONALFILMFESTIVAL"}
+];
+
+const DEFAULT_INTERNATIONAL = [
+  {id:genId(),type:'international',name:"IDFA \u2014 International Documentary Film Festival Amsterdam",country:"Netherlands",region:"Europe",tier:"A-list",focus:"Documentary",deadlineMonth:"April'26",earlyDeadline:"2026-04-14",lateDeadline:"2026-06-16",fee:40,status:"Not applied",priority:9,premiereRequired:"World Premiere strongly preferred",platform:"FilmFreeway",docsRequired:"Screener (Vimeo PW), 5+ stills, EPK, director bio, synopsis",regLink:"",notes:"World's top documentary festival. Most competitive doc festival globally.",oscar:"No",visibility:"High",tips:"Apply to First Appearance section if debut feature doc. Strong thematic fit with entrepreneurship / social change.",website:"https://www.idfa.nl/en/"},
+  {id:genId(),type:'international',name:"Hot Docs \u2014 Canadian International Documentary Festival",country:"Canada",region:"North America",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-01-08",lateDeadline:"",fee:75,status:"Deadline Passed",priority:9,premiereRequired:"",platform:"FilmFreeway",docsRequired:"Screener, stills, EPK, poster, synopsis",regLink:"",notes:"North America's largest and most commercially powerful doc festival. Netflix, CBC, BBC scouts attend.",oscar:"Yes",visibility:"High",tips:"If the film doesn't land a World Premiere at IDFA, Hot Docs is the next best target.",website:"https://hotdocs.ca/"},
+  {id:genId(),type:'international',name:"Sundance Film Festival",country:"USA",region:"North America",tier:"A-list",focus:"General + Documentary",deadlineMonth:"",earlyDeadline:"2026-09-01",lateDeadline:"",fee:70,status:"Not applied",priority:8,premiereRequired:"World Premiere required for main competition",platform:"FilmFreeway",docsRequired:"Screener, stills, synopsis, director note, EPK",regLink:"",notes:"Most prestigious US film festival overall. Extremely selective \u2014 roughly 1\u20132% acceptance rate.",oscar:"Yes",visibility:"High",tips:"Deadline typically August\u2013September. Submit only with final polished cut.",website:"https://festival.sundance.org/"},
+  {id:genId(),type:'international',name:"Tribeca Film Festival",country:"USA",region:"North America",tier:"A-list",focus:"General + Documentary",deadlineMonth:"",earlyDeadline:"2026-01-01",lateDeadline:"",fee:70,status:"Not applied",priority:8,premiereRequired:"U.S. Premiere minimum",platform:"FilmFreeway",docsRequired:"Screener, stills, EPK, trailer, synopsis",regLink:"",notes:"Strong entrepreneurship and business-culture audience in NYC. Founded by Robert De Niro.",oscar:"No",visibility:"High",tips:"NYC audience uniquely receptive to entrepreneurship stories.",website:"https://tribecafilm.com/"},
+  {id:genId(),type:'international',name:"DOC NYC",country:"USA",region:"North America",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-07-01",lateDeadline:"",fee:65,status:"Not applied",priority:8,premiereRequired:"None",platform:"FilmFreeway",docsRequired:"Screener, stills, bio, synopsis",regLink:"",notes:"Largest documentary-dedicated festival in the USA. Less premiere-strict.",oscar:"No",visibility:"High",tips:"Most accessible top-tier US doc festival for films that have already premiered elsewhere.",website:"https://www.docnyc.net/"},
+  {id:genId(),type:'international',name:"Sheffield DocFest",country:"UK",region:"Europe",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-01-01",lateDeadline:"",fee:55,status:"Not applied",priority:7,premiereRequired:"World / International Premiere",platform:"FilmFreeway",docsRequired:"Screener, stills, EPK, synopsis",regLink:"",notes:"Major UK documentary festival and market. BBC, Channel 4, BFI attend.",oscar:"No",visibility:"High",tips:"Essential if BBC or UK distribution is on the roadmap.",website:"https://www.sheffdocfest.com/"},
+  {id:genId(),type:'international',name:"Biografilm Festival",country:"Italy",region:"Europe",tier:"B",focus:"Biography + Documentary",deadlineMonth:"",earlyDeadline:"2026-03-01",lateDeadline:"",fee:40,status:"Deadline Passed",priority:7,premiereRequired:"Italy Premiere required",platform:"Festhome",docsRequired:"Screener, stills, synopsis",regLink:"",notes:"Bologna-based. Strong thematic fit for entrepreneurship doc \u2014 subjects' personal journeys match biography focus.",oscar:"No",visibility:"Medium",tips:"One of the best thematic fits for the doc.",website:"https://www.biografilm.it/en/"},
+  {id:genId(),type:'international',name:"True/False Film Festival",country:"USA",region:"North America",tier:"A-list",focus:"Documentary",deadlineMonth:"",earlyDeadline:"2026-12-01",lateDeadline:"",fee:50,status:"Not applied",priority:7,premiereRequired:"World / International Premiere",platform:"FilmFreeway",docsRequired:"Screener, director note, stills",regLink:"",notes:"Known for bold, artistically ambitious documentaries. High prestige for selection alone.",oscar:"No",visibility:"High",tips:"Apply if the film has a distinctive visual style or strong cinematic language.",website:"https://truefalse.org/"},
+  {id:genId(),type:'international',name:"F:ACT Award",country:"Denmark",region:"Europe",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"",lateDeadline:"",fee:0,status:"Not applied",priority:6,premiereRequired:"",platform:"Festhome",docsRequired:"Screener, stills, EPK, synopsis",regLink:"",notes:"Copenhagen-based. Good for European recognition and Scandinavian visibility.",oscar:"No",visibility:"Medium",tips:"Good mid-tier European option. Submit after A-list festivals.",website:"https://cphdox.dk/"},
+  {id:genId(),type:'international',name:"Millennium Docs Against Gravity (MDAG)",country:"Poland",region:"Europe",tier:"B",focus:"Documentary",deadlineMonth:"",earlyDeadline:"",lateDeadline:"",fee:30,status:"Not applied",priority:6,premiereRequired:"",platform:"Eventival",docsRequired:"Screener, stills, synopsis",regLink:"",notes:"Central Europe's biggest documentary festival. Focus: Society section relevant for entrepreneurship themes.",oscar:"No",visibility:"Medium",tips:"Low fee, no premiere requirement. Good volume application.",website:"https://mdag.pl/"}
+];
+
+function genId(){return Math.random().toString(36).substr(2,9)}
+
+const WEBSITE_MAP = {
+  "IFFI":"https://www.iffigoa.org/","MAMI":"https://www.mumbaifilmfestival.com/","IFFK":"https://iffk.in/","BIFFes":"https://www.biffes.org/","Kolkata IFF":"https://kiff.in/","IFFD":"https://www.iffdelhi.com/","DIFF":"https://diff.co.in/","Pune IFF":"https://www.piffindia.com/","Jaipur IFF":"https://www.jiffindia.org/","Delhi Int'l Film Festival":"http://www.delhiinternationalfilmfestival.com/","NDFF":"https://ndffindia.org/","MIDSFF":"https://filmfreeway.com/MaduraiFilmFestival","MSDFF":"https://msdffest.com/","Smita Patil":"https://spiffpune.com/","ICFF \u2014 Indian Cine":"https://filmfreeway.com/IndianCineFilmFestival","IWFF":"https://filmfreeway.com/IndianWorldFilmFestival","F5IFF":"https://www.f5iff.com/","Jio MAMI":"https://www.mumbaifilmfestival.com/","NYIFF":"https://www.nyiff.us/","IDSFFK":"https://idsffk.in/","India Movie Awards":"https://filmfreeway.com/INDIANMOVIEAWARDS","ASIAN INTERNATIONAL":"https://filmfreeway.com/ASIANINTERNATIONALFILMFAREAWARDS","Delhi Shorts":"https://filmfreeway.com/delhi-shorts-international-film-festival","INDIA CHICAGO":"https://filmfreeway.com/INDIACHICAGOINTERNATIONALFILMFESTIVAL","IDFA":"https://www.idfa.nl/en/","Hot Docs":"https://hotdocs.ca/","Sundance":"https://festival.sundance.org/","Tribeca":"https://tribecafilm.com/","DOC NYC":"https://www.docnyc.net/","Sheffield":"https://www.sheffdocfest.com/","Biografilm":"https://www.biografilm.it/en/","True/False":"https://truefalse.org/","F:ACT":"https://cphdox.dk/","Millennium":"https://mdag.pl/"
+};
+function migrateWebsites(data){
+  [...(data.national||[]),...(data.international||[])].forEach(f=>{
+    if(!f.website){
+      for(const[key,url] of Object.entries(WEBSITE_MAP)){
+        if(f.name&&f.name.includes(key)){f.website=url;break}
+      }
+    }
+  });
+  return data;
+}
+function loadData(){
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if(stored){
+    const data = migrateWebsites(JSON.parse(stored));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return data;
+  }
+  const data = {national:DEFAULT_NATIONAL,international:DEFAULT_INTERNATIONAL};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  return data;
+}
+function saveData(data){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+
+function getData(){return loadData()}
+function getList(type){return getData()[type]||[]}
+
+// Dashboard
+function renderDashboard(){
+  const d = getData();
+  const all = [...d.national,...d.international];
+  const applied = all.filter(f=>f.status==='Applied').length;
+  const shortlisted = all.filter(f=>f.status==='Shortlisted').length;
+  const selected = all.filter(f=>f.status==='Selected').length;
+  const feesPaid = all.filter(f=>['Applied','Shortlisted','Selected'].includes(f.status)).reduce((s,f)=>s+(parseFloat(f.fee)||0),0);
+  const upcoming = all.filter(f=>{
+    if(!f.earlyDeadline && !f.lateDeadline) return false;
+    const dl = f.earlyDeadline || f.lateDeadline;
+    const d = new Date(dl);
+    const now = new Date();
+    const diff = (d-now)/(1000*60*60*24);
+    return diff>=0 && diff<=30;
+  }).length;
+  const natCount = d.national.length;
+  const intCount = d.international.length;
+
+  document.getElementById('dashboard').innerHTML = `
+    <div class="stat-card highlight"><div class="value">${all.length}</div><div class="label">Total Festivals</div></div>
+    <div class="stat-card"><div class="value">${applied}</div><div class="label">Applied</div></div>
+    <div class="stat-card"><div class="value">${shortlisted}</div><div class="label">Shortlisted</div></div>
+    <div class="stat-card"><div class="value">${selected}</div><div class="label">Selected</div></div>
+    <div class="stat-card"><div class="value">$${feesPaid.toFixed(0)}</div><div class="label">Fees (Applied)</div></div>
+    <div class="stat-card"><div class="value">${upcoming}</div><div class="label">Due in 30 days</div></div>
+  `;
+  document.getElementById('natCount').textContent = natCount;
+  document.getElementById('intCount').textContent = intCount;
+}
+
+// This Month's Deadlines
+function renderMonthPanel(){
+  const d = getData();
+  const all = [...d.national.map(f=>({...f,_type:'national'})),...d.international.map(f=>({...f,_type:'international'}))];
+  const now = new Date();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  // Find festivals with any deadline (early or late) in current month
+  const thisMonth = [];
+  all.forEach(f=>{
+    const dates = [];
+    if(f.earlyDeadline){const dt=new Date(f.earlyDeadline);if(!isNaN(dt)&&dt.getMonth()===curMonth&&dt.getFullYear()===curYear) dates.push({date:dt,label:'Early Deadline'})}
+    if(f.lateDeadline){const dt=new Date(f.lateDeadline);if(!isNaN(dt)&&dt.getMonth()===curMonth&&dt.getFullYear()===curYear) dates.push({date:dt,label:'Late Deadline'})}
+    if(dates.length) thisMonth.push({...f,_deadlines:dates,_nearest:Math.min(...dates.map(x=>x.date.getTime()))});
+  });
+
+  thisMonth.sort((a,b)=>a._nearest-b._nearest);
+
+  const panel = document.getElementById('monthPanel');
+  const header = `<div class="month-panel-header">
+    <h2 class="month-panel-toggle" onclick="document.getElementById('monthGrid').style.display=document.getElementById('monthGrid').style.display==='none'?'grid':'none';this.querySelector('.chevron').textContent=document.getElementById('monthGrid').style.display==='none'?'\u25B6':'\u25BC'">
+      <span class="month-icon">${String(curMonth+1).padStart(2,'0')}</span>
+      ${monthNames[curMonth]} ${curYear} Deadlines
+      <span class="chevron" style="font-size:.7rem;color:var(--text2)">\u25BC</span>
+    </h2>
+    <span class="month-count">${thisMonth.length} festival${thisMonth.length!==1?'s':''}</span>
+  </div>`;
+
+  if(!thisMonth.length){
+    panel.innerHTML = header + `<div class="month-empty">No deadlines this month</div>`;
+    return;
+  }
+
+  const cards = thisMonth.map(f=>{
+    const daysLeft = Math.ceil((f._nearest - now.getTime())/(1000*60*60*24));
+    const urgency = daysLeft<0?'urgent':daysLeft<=3?'urgent':daysLeft<=7?'soon':'comfortable';
+    let countdownClass, countdownText;
+    if(daysLeft<0){countdownClass='overdue';countdownText=`${Math.abs(daysLeft)}d overdue`}
+    else if(daysLeft===0){countdownClass='critical';countdownText='Today!'}
+    else if(daysLeft===1){countdownClass='critical';countdownText='Tomorrow'}
+    else if(daysLeft<=3){countdownClass='critical';countdownText=`${daysLeft} days left`}
+    else if(daysLeft<=7){countdownClass='warning';countdownText=`${daysLeft} days left`}
+    else{countdownClass='ok';countdownText=`${daysLeft} days left`}
+
+    const typeBadge = f._type==='national'
+      ?'<span class="mc-type-badge mc-type-nat">National</span>'
+      :'<span class="mc-type-badge mc-type-int">International</span>';
+    const loc = f._type==='national'?(f.state||''):(f.country||'');
+    const statusClass = 'status-'+f.status.toLowerCase().replace(/\s+/g,'-');
+    const priClass = f.priority>=8?'pri-high':f.priority>=5?'pri-med':'pri-low';
+
+    const dlLines = f._deadlines.map(dl=>{
+      const dateStr = dl.date.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      return `<strong>${dateStr}</strong> <span style="opacity:.6">(${dl.label})</span>`;
+    }).join(' &nbsp;/&nbsp; ');
+
+    return `<div class="month-card ${urgency}">
+      <div class="mc-top">
+        ${f.website?`<a href="${esc(f.website)}" target="_blank" rel="noopener" class="mc-name" style="color:var(--accent);text-decoration:none">${esc(f.name)}</a>`:`<span class="mc-name">${esc(f.name)}</span>`}
+        ${typeBadge}
+      </div>
+      <div class="mc-meta">
+        <span>${esc(loc)}</span>
+        <span><span class="tier-badge ${f.tier==='A-list'?'tier-a':'tier-b'}" style="font-size:.65rem">${esc(f.tier||'')}</span></span>
+        <span>${esc(f.focus||'')}</span>
+        <span class="mc-fee">${f.fee?'$'+f.fee:'Free'}</span>
+        <span class="status-badge ${statusClass}" style="font-size:.68rem">${esc(f.status)}</span>
+        <span><span class="priority-badge ${priClass}" style="width:20px;height:20px;font-size:.65rem">${f.priority||'-'}</span></span>
+      </div>
+      <div class="mc-bottom">
+        <span class="mc-deadline">${dlLines}</span>
+        <span class="mc-countdown ${countdownClass}">${countdownText}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = header + `<div class="month-grid" id="monthGrid">${cards}</div>`;
+}
+
+// Region filter
+function updateRegionFilter(){
+  const list = getList(currentTab);
+  const regions = [...new Set(list.map(f=>currentTab==='national'?f.state:f.region).filter(Boolean))].sort();
+  const sel = document.getElementById('filterRegion');
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${currentTab==='national'?'All States':'All Regions'}</option>` +
+    regions.map(r=>`<option ${r===current?'selected':''}>${r}</option>`).join('');
+}
+
+// Render table
+function render(){
+  let list = getList(currentTab);
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const status = document.getElementById('filterStatus').value;
+  const tier = document.getElementById('filterTier').value;
+  const region = document.getElementById('filterRegion').value;
+  const oscar = document.getElementById('filterOscar').value;
+
+  if(search) list = list.filter(f=>f.name.toLowerCase().includes(search)||(f.notes||'').toLowerCase().includes(search)||(f.state||'').toLowerCase().includes(search)||(f.country||'').toLowerCase().includes(search));
+  if(status) list = list.filter(f=>f.status===status);
+  if(tier) list = list.filter(f=>f.tier===tier);
+  if(region) list = list.filter(f=>(currentTab==='national'?f.state:f.region)===region);
+  if(oscar) list = list.filter(f=>f.oscar===oscar);
+
+  // Sort
+  list.sort((a,b)=>{
+    let va,vb;
+    if(currentSort==='priority'){va=a.priority||0;vb=b.priority||0;return (vb-va)*sortDir}
+    if(currentSort==='fee'){va=parseFloat(a.fee)||0;vb=parseFloat(b.fee)||0;return (va-vb)*sortDir}
+    if(currentSort==='name'){return a.name.localeCompare(b.name)*sortDir}
+    if(currentSort==='earlyDeadline'){
+      va=a.earlyDeadline||a.lateDeadline||'9999';
+      vb=b.earlyDeadline||b.lateDeadline||'9999';
+      return va.localeCompare(vb)*sortDir;
+    }
+    return 0;
+  });
+
+  const isNat = currentTab==='national';
+  document.getElementById('tableHead').innerHTML = `<tr>
+    <th style="width:28px">#</th>
+    <th>Festival</th>
+    <th>${isNat?'State':'Country'}</th>
+    <th>Tier</th>
+    <th>Focus</th>
+    <th>Early Deadline</th>
+    <th>Late Deadline</th>
+    <th>Fee</th>
+    <th>Status</th>
+    <th>Priority</th>
+    <th>Decision</th>
+    <th>Premiere</th>
+    <th>Oscar</th>
+    <th>Visibility</th>
+    <th>Platform</th>
+    <th class="notes-cell">Notes</th>
+    <th style="width:60px"></th>
+  </tr>`;
+
+  if(!list.length){
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="17"><div class="empty"><p>No festivals match your filters</p></div></td></tr>`;
+    return;
+  }
+
+  document.getElementById('tableBody').innerHTML = list.map((f,i)=>{
+    const statusClass = 'status-'+f.status.toLowerCase().replace(/\s+/g,'-');
+    const priClass = f.priority>=8?'pri-high':f.priority>=5?'pri-med':'pri-low';
+    const tierClass = f.tier==='A-list'?'tier-a':'tier-b';
+    const dlClass = getDeadlineClass(f.earlyDeadline||f.lateDeadline);
+    const visClass = (f.visibility||'').toLowerCase().includes('high')?'vis-high':(f.visibility||'').toLowerCase().includes('med')?'vis-med':'vis-low';
+    const decClass = (f.decision||'').includes('\u274c')?'decision-skip':(f.decision||'').includes('\u2705')?'decision-apply':'decision-low';
+    const loc = isNat?f.state:f.country;
+
+    return `<tr>
+      <td style="color:var(--text2);font-size:.75rem">${i+1}</td>
+      <td>${f.website?`<a href="${esc(f.website)}" target="_blank" rel="noopener" style="font-size:.82rem;font-weight:600;color:var(--accent);text-decoration:none">${esc(f.name)}</a>`:`<strong style="font-size:.82rem">${esc(f.name)}</strong>`}${f.regLink?`<br><a href="${esc(f.regLink)}" target="_blank" style="font-size:.7rem;color:var(--text2)">Regulations</a>`:''}</td>
+      <td style="font-size:.8rem">${esc(loc||'')}</td>
+      <td><span class="tier-badge ${tierClass}">${esc(f.tier||'')}</span></td>
+      <td style="font-size:.78rem">${esc(f.focus||'')}</td>
+      <td class="${dlClass}" style="font-size:.78rem;white-space:nowrap">${formatDate(f.earlyDeadline)}</td>
+      <td class="${dlClass}" style="font-size:.78rem;white-space:nowrap">${formatDate(f.lateDeadline)}</td>
+      <td style="font-size:.82rem;font-weight:500">${f.fee?'$'+f.fee:'Free'}</td>
+      <td><select class="status-select" onchange="updateStatus('${f.id}',this.value)">
+        ${STATUS_OPTIONS.map(s=>`<option ${s===f.status?'selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td><span class="priority-badge ${priClass}">${f.priority||'-'}</span></td>
+      <td><span class="${decClass}">${esc(f.decision||'')}</span></td>
+      <td style="font-size:.75rem">${esc(f.premiereRequired||'No')}</td>
+      <td><span class="${f.oscar==='Yes'?'oscar-yes':'oscar-no'}">${f.oscar==='Yes'?'Yes':'No'}</span></td>
+      <td><span class="${visClass}">${esc(f.visibility||'-')}</span></td>
+      <td style="font-size:.75rem">${esc(f.platform||'')}</td>
+      <td class="notes-cell" title="${esc(f.notes||'')}">${esc(f.notes||'')}</td>
+      <td class="actions-cell">
+        <button class="btn btn-sm" onclick="openModal('${f.id}')">Edit</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function getDeadlineClass(dl){
+  if(!dl) return '';
+  const d = new Date(dl);
+  const now = new Date();
+  const diff = (d-now)/(1000*60*60*24);
+  if(diff<0) return 'deadline-passed';
+  if(diff<=14) return 'deadline-soon';
+  return 'deadline-ok';
+}
+
+function formatDate(d){
+  if(!d) return '\u2014';
+  try{
+    const dt = new Date(d);
+    if(isNaN(dt)) return d;
+    return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){return d}
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// Tab switching
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  updateRegionFilter();
+  render();
+}
+
+// Sort
+function setSort(s){
+  if(currentSort===s) sortDir*=-1;
+  else{currentSort=s;sortDir=1}
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===s));
+  render();
+}
+
+// Status update
+function updateStatus(id,status){
+  const data = getData();
+  for(const type of ['national','international']){
+    const f = data[type].find(f=>f.id===id);
+    if(f){f.status=status;break}
+  }
+  saveData(data);
+  renderDashboard();
+  renderMonthPanel();
+  toast('Status updated');
+}
+
+// Modal
+function openModal(id){
+  editingId = id||null;
+  const isNat = currentTab==='national';
+  let f = {};
+  if(id){
+    const data = getData();
+    for(const type of ['national','international']){
+      const found = data[type].find(x=>x.id===id);
+      if(found){f=found;break}
+    }
+  }
+
+  document.getElementById('modalTitle').textContent = id?'Edit Festival':'Add Festival';
+  document.getElementById('deleteBtn').style.display = id?'inline-flex':'none';
+
+  const fields = [
+    {key:'name',label:'Festival Name',type:'text',full:true,required:true},
+    ...(isNat?[{key:'state',label:'State',type:'text'}]:[{key:'country',label:'Country',type:'text'}]),
+    {key:'region',label:'Region',type:'text'},
+    {key:'tier',label:'Tier',type:'select',options:TIER_OPTIONS},
+    {key:'focus',label:'Focus',type:'text'},
+    {key:'deadlineMonth',label:'Deadline Month',type:'text'},
+    {key:'earlyDeadline',label:'Early Deadline',type:'date'},
+    {key:'lateDeadline',label:'Late Deadline',type:'date'},
+    {key:'fee',label:'Fee (USD)',type:'number'},
+    {key:'status',label:'Status',type:'select',options:STATUS_OPTIONS},
+    {key:'priority',label:'Priority (1-10)',type:'number'},
+    {key:'decision',label:'Decision',type:'text'},
+    {key:'premiereRequired',label:'Premiere Required?',type:'text'},
+    {key:'oscar',label:'Oscar Qualifying',type:'select',options:['No','Yes']},
+    {key:'visibility',label:'Global Visibility',type:'select',options:VISIBILITY_OPTIONS},
+    {key:'platform',label:'Platform',type:'text'},
+    {key:'categoryApplied',label:'Category Applied For',type:'text'},
+    {key:'website',label:'Official Website',type:'text',full:true},
+    {key:'docsRequired',label:'Documents Required',type:'textarea',full:true},
+    {key:'regLink',label:'Link to Regulations',type:'text',full:true},
+    {key:'notes',label:'Notes',type:'textarea',full:true},
+    ...(isNat?[{key:'rationale',label:'Rating Rationale',type:'textarea',full:true}]:[{key:'tips',label:'Tips',type:'textarea',full:true}])
+  ];
+
+  document.getElementById('modalForm').innerHTML = fields.map(fd=>{
+    const val = f[fd.key]||'';
+    const cls = fd.full?'form-group full':'form-group';
+    if(fd.type==='select'){
+      return `<div class="${cls}"><label>${fd.label}</label><select id="f_${fd.key}">${fd.options.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select></div>`;
+    }
+    if(fd.type==='textarea'){
+      return `<div class="${cls}"><label>${fd.label}</label><textarea id="f_${fd.key}" rows="2">${esc(val)}</textarea></div>`;
+    }
+    return `<div class="${cls}"><label>${fd.label}</label><input type="${fd.type}" id="f_${fd.key}" value="${esc(val)}"></div>`;
+  }).join('');
+
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+  editingId = null;
+}
+
+function saveFestival(){
+  const isNat = currentTab==='national';
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){toast('Festival name is required');return}
+
+  const data = getData();
+  const type = isNat?'national':'international';
+
+  const fields = ['name','region','tier','focus','deadlineMonth','earlyDeadline','lateDeadline','fee','status','priority','decision','premiereRequired','oscar','visibility','platform','categoryApplied','website','docsRequired','regLink','notes'];
+  if(isNat) fields.push('state','rationale');
+  else fields.push('country','tips');
+
+  const entry = {type};
+  fields.forEach(k=>{
+    const el = document.getElementById('f_'+k);
+    if(el){
+      let v = el.value;
+      if(k==='fee'||k==='priority') v = parseFloat(v)||0;
+      entry[k] = v;
+    }
+  });
+
+  if(editingId){
+    const idx = data[type].findIndex(f=>f.id===editingId);
+    if(idx>=0){entry.id=editingId;data[type][idx]=entry}
+  } else {
+    entry.id = genId();
+    data[type].push(entry);
+  }
+
+  saveData(data);
+  closeModal();
+  renderDashboard();
+  renderMonthPanel();
+  updateRegionFilter();
+  render();
+  toast(editingId?'Festival updated':'Festival added');
+}
+
+function deleteFestival(){
+  if(!editingId||!confirm('Delete this festival?')) return;
+  const data = getData();
+  for(const type of ['national','international']){
+    data[type] = data[type].filter(f=>f.id!==editingId);
+  }
+  saveData(data);
+  closeModal();
+  renderDashboard();
+  renderMonthPanel();
+  updateRegionFilter();
+  render();
+  toast('Festival deleted');
+}
+
+// Export/Import
+function exportData(){
+  const data = getData();
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ffn-festivals-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(data.national && data.international){
+        saveData(data);
+        renderDashboard();
+        renderMonthPanel();
+        updateRegionFilter();
+        render();
+        toast('Data imported successfully');
+      } else {
+        toast('Invalid file format');
+      }
+    }catch(err){toast('Error reading file')}
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// Init
+renderDashboard();
+renderMonthPanel();
+updateRegionFilter();
+render();
+</script>
+</body>
+</html>
