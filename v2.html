@@ -11,660 +11,333 @@
   --border:#2d323c;--border2:#3d434f;
   --text:#e8eaed;--text2:#9aa0ac;--text3:#6b7280;
   --accent:#7fc67a;--accent-dim:#1f3320;
-  --pri-high:#f87171;--pri-med:#fbbf24;--pri-low:#9ca3af;
   --apply:#86efac;--skip:#f87171;--strategic:#fbbf24;
-  --radius:10px;
+  --radius:8px;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
-.app{max-width:1200px;margin:0 auto;padding:24px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.4;min-height:100vh;overflow:hidden}
+.app{max-width:100vw;margin:0 auto;padding:16px 20px;height:100vh;display:flex;flex-direction:column}
 
 /* Header */
-header{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:16px}
-h1{font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
-h1 .subtitle{display:block;color:var(--accent);font-weight:400;font-size:.8rem;margin-top:4px;letter-spacing:0}
-.top-link{display:inline-flex;align-items:center;gap:6px;color:var(--text2);font-size:.8rem;text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:6px}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px;flex-wrap:wrap;gap:10px}
+h1{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+h1 .subtitle{color:var(--accent);font-weight:400;font-size:.72rem;margin-left:8px;letter-spacing:0}
+.top-link{display:inline-flex;align-items:center;gap:5px;color:var(--text2);font-size:.72rem;text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:5px}
 .top-link:hover{color:var(--text);border-color:var(--border2)}
 
-/* Summary */
-.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:center}
-.stat .v{font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:-.02em}
-.stat .l{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+/* Summary — single compact row */
+.summary{display:flex;gap:16px;flex-wrap:wrap;font-size:.75rem;margin-bottom:10px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.summary span{color:var(--text2)}
+.summary span b{color:var(--accent);font-weight:700;margin-right:3px;font-size:.85rem}
 
-/* Filter bar */
-.controls{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
-.search{flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:.85rem;outline:none}
+/* Controls */
+.controls{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.search{flex:0 0 220px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.78rem;outline:none}
 .search:focus{border-color:var(--accent)}
-.chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:.75rem;font-weight:500;transition:all .15s;white-space:nowrap}
+.chip{padding:4px 11px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:.7rem;font-weight:500;white-space:nowrap}
 .chip:hover{border-color:var(--border2);color:var(--text)}
 .chip.active{background:var(--accent);color:#0f1115;border-color:var(--accent);font-weight:600}
-.sort-group{display:flex;gap:4px;padding:3px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
-.sort-group .chip{border:none;padding:4px 12px;background:transparent}
+.sort-label{font-size:.7rem;color:var(--text3);margin-left:6px}
+.sort-group{display:flex;gap:2px;padding:2px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.sort-group .chip{border:none;padding:3px 10px;background:transparent}
 .sort-group .chip.active{background:var(--accent)}
 
-/* Festival Card */
-.festivals{display:flex;flex-direction:column;gap:14px}
-.fest{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:all .15s}
-.fest:hover{border-color:var(--border2)}
-.fest-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
-.fest-title-block{flex:1;min-width:0}
-.fest-name{font-size:1.05rem;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px}
-.fest-name a{color:inherit;text-decoration:none}
-.fest-name a:hover{color:var(--accent)}
-.fest-meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.75rem;color:var(--text2)}
-.fest-meta .state{opacity:.9}
-.decision{font-size:.7rem;font-weight:600;padding:2px 10px;border-radius:10px;letter-spacing:.02em}
+/* Table wrapper */
+.table-wrap{flex:1;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:relative;min-height:0}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.78rem}
+thead{position:sticky;top:0;z-index:20}
+th{background:var(--surface2);padding:10px 12px;text-align:left;font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);border-bottom:1px solid var(--border2);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text);background:var(--surface3)}
+th.sorted{color:var(--accent)}
+th .arrow{opacity:.5;margin-left:3px;font-size:.6rem}
+th.sorted .arrow{opacity:1}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--surface2)}
+tbody tr:last-child td{border-bottom:none}
+
+/* Sticky first column */
+th.c-name,td.c-name{position:sticky;left:0;z-index:10;background:var(--surface)}
+tbody tr:hover td.c-name{background:var(--surface2)}
+th.c-name{background:var(--surface2);z-index:30}
+
+/* Column widths */
+.c-pri{width:50px;text-align:center}
+.c-name{min-width:260px;max-width:320px}
+.c-name strong{display:block;font-weight:600;color:var(--text);font-size:.82rem;line-height:1.25;margin-bottom:2px}
+.c-name strong a{color:inherit;text-decoration:none}
+.c-name strong a:hover{color:var(--accent)}
+.c-name .sub{display:flex;gap:8px;font-size:.7rem;color:var(--text2);align-items:center}
+.c-decision{width:110px}
+.c-deadlines{min-width:380px}
+.c-format{min-width:240px;max-width:320px}
+.c-apply{width:100px;text-align:right;position:sticky;right:0;background:var(--surface);z-index:10}
+tbody tr:hover td.c-apply{background:var(--surface2)}
+th.c-apply{background:var(--surface2);position:sticky;right:0;z-index:30}
+
+/* Priority circle compact */
+.pri-circle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-size:.82rem;font-weight:700;border:2px solid}
+.pri-10,.pri-9{background:rgba(134,239,172,.15);color:var(--apply);border-color:var(--apply)}
+.pri-8,.pri-7{background:rgba(251,191,36,.12);color:var(--strategic);border-color:var(--strategic)}
+.pri-6,.pri-5,.pri-4{background:rgba(156,163,175,.12);color:var(--text2);border-color:var(--text3)}
+.pri-3,.pri-2,.pri-1,.pri-0{background:rgba(248,113,113,.12);color:var(--skip);border-color:var(--skip)}
+.pri-null{background:var(--surface2);color:var(--text3);border-color:var(--border2)}
+
+/* Decision pill */
+.decision{display:inline-block;font-size:.65rem;font-weight:600;padding:2px 9px;border-radius:10px;letter-spacing:.02em;white-space:nowrap}
 .d-apply{background:rgba(134,239,172,.12);color:var(--apply)}
 .d-skip{background:rgba(248,113,113,.12);color:var(--skip)}
 .d-strategic{background:rgba(251,191,36,.12);color:var(--strategic)}
-.priority-box{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
-.priority-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;border:2px solid}
-.pri-10,.pri-9{background:rgba(134,239,172,.15);color:var(--apply);border-color:var(--apply)}
-.pri-8,.pri-7{background:rgba(251,191,36,.12);color:var(--strategic);border-color:var(--strategic)}
-.pri-6,.pri-5,.pri-4{background:rgba(156,163,175,.12);color:var(--pri-low);border-color:var(--pri-low)}
-.pri-3,.pri-2,.pri-1,.pri-0{background:rgba(248,113,113,.12);color:var(--skip);border-color:var(--skip)}
-.priority-label{font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
-/* Deadline ladder */
-.ladder-wrap{margin-bottom:14px}
-.ladder-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:600}
-.ladder{display:flex;gap:0;flex-wrap:wrap;position:relative}
-.rung{flex:1;min-width:110px;background:var(--surface2);border:1px solid var(--border);padding:9px 12px;position:relative;transition:all .15s}
-.rung:first-child{border-top-left-radius:6px;border-bottom-left-radius:6px}
-.rung:last-child{border-top-right-radius:6px;border-bottom-right-radius:6px}
-.rung:not(:last-child){border-right:none}
-.rung.passed{opacity:.4;background:var(--surface)}
-.rung.passed .rung-fee{text-decoration:line-through}
-.rung.current{background:var(--accent-dim);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.rung.current .rung-fee{color:var(--accent);font-weight:700}
-.rung-stage{font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:2px}
-.rung.current .rung-stage{color:var(--accent)}
-.rung-date{font-size:.82rem;font-weight:600;color:var(--text)}
-.rung-fee{font-size:.72rem;color:var(--text2);margin-top:2px}
-.rung-countdown{font-size:.6rem;color:var(--pri-high);font-weight:600;margin-top:1px}
-.ladder-empty{padding:12px;background:var(--surface2);border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:.8rem;text-align:center;font-style:italic}
+/* Inline deadline chips */
+.deadlines-row{display:flex;gap:4px;flex-wrap:wrap}
+.dl{display:inline-flex;flex-direction:column;align-items:flex-start;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);min-width:72px;line-height:1.15;font-size:.7rem}
+.dl.passed{opacity:.35}
+.dl.passed .dl-fee{text-decoration:line-through}
+.dl.current{background:var(--accent-dim);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dl.current .dl-fee{color:var(--accent);font-weight:700}
+.dl-stage{font-size:.55rem;text-transform:uppercase;color:var(--text3);letter-spacing:.05em;font-weight:600}
+.dl.current .dl-stage{color:var(--accent)}
+.dl-date{color:var(--text);font-weight:600;font-size:.72rem;margin-top:1px}
+.dl-fee{color:var(--text2);font-size:.68rem}
+.no-dl{color:var(--text3);font-style:italic;font-size:.72rem}
 
-/* Bottom grid */
-.fest-bottom{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;padding-top:12px;border-top:1px solid var(--border)}
-.format-block{min-width:0}
-.format-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600}
-.format-text{font-size:.8rem;color:var(--text);line-height:1.45}
-.format-text .ellipsis{color:var(--accent);cursor:pointer;font-size:.7rem;font-weight:500;margin-left:4px}
-.apply-btn{background:var(--accent);color:#0f1115;padding:9px 18px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;border:none;cursor:pointer}
-.apply-btn:hover{background:#9ad695;transform:translateY(-1px)}
+/* Format text (truncated) */
+.format-text{color:var(--text);font-size:.72rem;line-height:1.4;max-height:42px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;cursor:help;position:relative}
+.format-text:hover{max-height:none;-webkit-line-clamp:unset;background:var(--surface3);position:relative;z-index:15;padding:6px 8px;margin:-6px -8px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.5)}
+
+/* Apply button */
+.apply-btn{background:var(--accent);color:#0f1115;padding:6px 12px;border-radius:5px;text-decoration:none;font-size:.72rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;transition:all .12s;border:none;cursor:pointer}
+.apply-btn:hover{background:#9ad695}
 .apply-btn.disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;pointer-events:none}
 
 /* Empty */
-.empty{text-align:center;padding:60px 20px;color:var(--text2)}
-.empty p{font-size:.9rem}
+.empty{text-align:center;padding:60px 20px;color:var(--text2);font-size:.85rem}
 
-/* Responsive */
+/* Scrollbar */
+.table-wrap::-webkit-scrollbar{width:10px;height:10px}
+.table-wrap::-webkit-scrollbar-track{background:var(--surface)}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:5px}
+.table-wrap::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
 @media(max-width:700px){
-  .app{padding:14px}
-  .fest-header{flex-direction:row}
-  .rung{min-width:90px}
-  .fest-bottom{grid-template-columns:1fr}
-  .apply-btn{justify-self:start}
+  .app{padding:10px}
+  .search{flex:1;min-width:160px}
+  .c-format{display:none}
 }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
-    <h1>National Festivals <span class="subtitle">Against All Odds &bull; simplified tracker v2</span></h1>
-    <a href="index.html" class="top-link">&larr; Open full tracker (v1)</a>
+    <h1>National Festivals<span class="subtitle">Against All Odds &bull; v2</span></h1>
+    <a href="index.html" class="top-link">&larr; Full tracker (v1)</a>
   </header>
 
   <div class="summary" id="summary"></div>
 
   <div class="controls">
-    <input class="search" id="searchInput" placeholder="Search festival name or state...">
+    <input class="search" id="searchInput" placeholder="Search...">
     <div class="chip active" data-filter="all">All</div>
-    <div class="chip" data-filter="priority">Priority Apply</div>
+    <div class="chip" data-filter="priority">Priority</div>
     <div class="chip" data-filter="apply">Apply</div>
     <div class="chip" data-filter="strategic">Strategic</div>
     <div class="chip" data-filter="skip">Skip</div>
+    <span class="sort-label">Sort:</span>
     <div class="sort-group">
       <div class="chip active" data-sort="priority">Priority</div>
       <div class="chip" data-sort="deadline">Next Deadline</div>
+      <div class="chip" data-sort="name">Name</div>
     </div>
   </div>
 
-  <div class="festivals" id="festivalsList"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="c-pri sortable" data-sort="priority">P<span class="arrow">\u2195</span></th>
+          <th class="c-name sortable" data-sort="name">Festival<span class="arrow">\u2195</span></th>
+          <th class="c-decision">Decision</th>
+          <th class="c-deadlines sortable" data-sort="deadline">Deadlines & Fees<span class="arrow">\u2195</span></th>
+          <th class="c-format">Format (for application)</th>
+          <th class="c-apply">Apply</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
-// National festivals — V2 clean data
 const FESTIVALS = [
-  {
-    name:"MAMI — Mumbai Film Festival",
-    state:"Mumbai",
-    priority:10, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-07-15", fee:null}
-    ],
-    formatApply:"Director statement, synopsis (short + long), stills, screener link, bio. Free for Indian films.",
-    registrationLink:"https://www.mumbaifilmfestival.com/"
-  },
-  {
-    name:"MIFF — 19th Mumbai Intl Film Festival",
-    state:"Mumbai",
-    priority:10, decision:"Priority Apply",
-    deadlines:[],
-    formatApply:"H.264/MP4 under 2 GB, 1920x1080. Upload via Vimeo link or Google Drive. Supporting docs must reach MIFF office by 17 April 2026 (6:00 PM). Suggested category: National Competition (for Indian filmmakers).",
-    registrationLink:"https://miff.in/"
-  },
-  {
-    name:"IFFI Goa — 57th International Film Festival of India",
-    state:"Goa",
-    priority:10, decision:"Priority Apply",
-    deadlines:[],
-    formatApply:"Online application form, director bio, synopsis, screener link, production stills. Indian Panorama — Non-Feature (Documentary).",
-    registrationLink:"https://www.iffigoa.org/"
-  },
-  {
-    name:"DIFF — Dharamshala Int'l Film Festival",
-    state:"Dharamshala HP",
-    priority:9, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-06-02", fee:35},
-      {stage:"Regular", date:"2026-07-02", fee:45},
-      {stage:"Late", date:"2026-08-02", fee:65}
-    ],
-    formatApply:"Online screener (Vimeo/YouTube unlisted link with password), HD format only. Entry form, screener link, bio, synopsis, stills. Film must be a Dharamshala premiere (not previously screened in Dharamshala).",
-    registrationLink:"https://filmfreeway.com/DharamshalaInternationalFilmFestival"
-  },
-  {
-    name:"IDSFFK — Int'l Documentary & Short Film Festival of Kerala",
-    state:"Thiruvananthapuram",
-    priority:9, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-05-05", fee:null}
-    ],
-    formatApply:"Online screener only (Vimeo/YouTube/Google Drive private link). No DVDs accepted for preview. CBFC certificate OR signed affidavit on ₹200 stamp paper stating completion date between 1 May 2025 and 30 April 2026.",
-    registrationLink:"https://vp.eventival.com/idsffk/idsffk2025/film-form/film-submission"
-  },
-  {
-    name:"MIDSFF — Madurai Int'l Documentary & Short Film Festival",
-    state:"Madurai TN",
-    priority:8, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-09-15", fee:50}
-    ],
-    formatApply:"Online screener, entry form, bio, synopsis. India's oldest dedicated documentary festival since 1998.",
-    registrationLink:"https://filmfreeway.com/MaduraiFilmFestival"
-  },
-  {
-    name:"Jio MAMI Short Film Festival",
-    state:"Mumbai",
-    priority:8, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-09-30", fee:30}
-    ],
-    formatApply:"Entry form, screener, bio. Only eligible if documentary is under 40 minutes.",
-    registrationLink:"https://www.mumbaifilmfestival.com/"
-  },
-  {
-    name:"Chennai Intl Documentary & Short Film Festival",
-    state:"Chennai",
-    priority:8, decision:"Priority Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-05-01", fee:10},
-      {stage:"Regular", date:"2026-11-01", fee:12},
-      {stage:"Late", date:"2026-12-01", fee:15}
-    ],
-    formatApply:"Online screener via FilmFreeway or private Vimeo/YouTube/Google Drive link. Non-competitive film festival.",
-    registrationLink:"https://filmfreeway.com/chennaidocshortfest"
-  },
-  {
-    name:"Smita Patil Documentary & Short Film Festival",
-    state:"Pune",
-    priority:7, decision:"Apply",
-    deadlines:[],
-    formatApply:"Entry form, screener, bio. Free to enter. Deadline passed for 2026 — watch for next cycle.",
-    registrationLink:"https://spiffpune.com/"
-  },
-  {
-    name:"IFFD — Int'l Film Festival Delhi",
-    state:"New Delhi",
-    priority:6, decision:"Apply",
-    deadlines:[],
-    formatApply:"Entry form, screener, bio, synopsis via FilmFreeway.",
-    registrationLink:"https://www.iffdelhi.com/"
-  },
-  {
-    name:"Jaipur IFF (JIFF)",
-    state:"Jaipur",
-    priority:6, decision:"Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-08-15", fee:65}
-    ],
-    formatApply:"Entry form, screener link, bio. Rolling submissions model.",
-    registrationLink:"https://filmfreeway.com/InternationalScreenplayCompetition-ISCatJIFF"
-  },
-  {
-    name:"NDFF — New Delhi Film Festival",
-    state:"New Delhi",
-    priority:6, decision:"Apply",
-    deadlines:[
-      {stage:"Deadline", date:"2026-06-16", fee:50}
-    ],
-    formatApply:"Online screener (Vimeo/YouTube/Google Drive private link) preferred. Also accepts DVD/Blu-ray/DCP if mailed. Entry form, screener, bio, synopsis.",
-    registrationLink:"https://ndffindia.org/"
-  },
-  {
-    name:"MSDFF — Mumbai Short & Documentary Film Festival",
-    state:"Mumbai",
-    priority:6, decision:"Apply",
-    deadlines:[],
-    formatApply:"Entry form, screener, bio via FilmFreeway. Dedicated doc and short film festival.",
-    registrationLink:"https://msdffest.com/"
-  },
-  {
-    name:"16th International Film Festivals in Jaipur",
-    state:"Jaipur",
-    priority:6, decision:"Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-04-30", fee:30},
-      {stage:"Regular", date:"2026-06-30", fee:35},
-      {stage:"Late", date:"2026-07-30", fee:35}
-    ],
-    formatApply:"Online screener (Vimeo/YouTube/Google Drive private link) OR DVD/Blu-ray. Short documentary — less than 45 mins. Direct email: 16filmfestivals@gmail.com (CHEAPER — save ~40% vs FilmFreeway).",
-    registrationLink:"https://jiffindia.org/"
-  },
-  {
-    name:"KSIFF-26 (15th Kolkata Shorts International Film Festival)",
-    state:"Kolkata",
-    priority:3, decision:"Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-04-18", fee:null},
-      {stage:"D2", date:"2026-05-08", fee:null},
-      {stage:"D3", date:"2026-05-28", fee:null},
-      {stage:"D4", date:"2026-06-17", fee:null},
-      {stage:"Late", date:"2026-07-07", fee:44}
-    ],
-    formatApply:"Online screener via Vimeo/Google Drive/YouTube private link (FilmFreeway upload accepted).",
-    registrationLink:"https://filmfreeway.com/KolkataShortsInternationalFilmFestival"
-  },
-  {
-    name:"MSIFF — 15th Mumbai International Short Film Festival",
-    state:"Mumbai",
-    priority:3, decision:"Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-04-24", fee:17},
-      {stage:"D2", date:"2026-05-14", fee:null},
-      {stage:"D3", date:"2026-06-03", fee:null},
-      {stage:"Late", date:"2026-11-19", fee:17}
-    ],
-    formatApply:"Online screener (Vimeo/Google Drive/YouTube private link).",
-    registrationLink:"https://filmfreeway.com/MSIFF"
-  },
-  {
-    name:"Mumbai Indi Film Festival",
-    state:"Mumbai",
-    priority:null, decision:"Apply",
-    deadlines:[
-      {stage:"Early", date:null, fee:54},
-      {stage:"Late", date:"2026-07-15", fee:null}
-    ],
-    formatApply:"Entry form, screener.",
-    registrationLink:"https://filmfreeway.com/mumbaiindifilmfest"
-  },
-  {
-    name:"F5IFF — Fest5 International Film Festival",
-    state:"Multiple cities",
-    priority:4, decision:"Strategic Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-04-22", fee:17},
-      {stage:"Regular", date:"2026-07-22", fee:22},
-      {stage:"Late", date:"2026-07-22", fee:27}
-    ],
-    formatApply:"Online screener only (Vimeo/Google Drive/YouTube private link). Apply direct at f5iff.com/film-submission — cheaper than FilmFreeway.",
-    registrationLink:"https://www.f5iff.com/film-submission"
-  },
-  {
-    name:"YathaKatha Film & Literature Festival",
-    state:"Mumbai",
-    priority:5, decision:"Strategic Apply",
-    deadlines:[
-      {stage:"Early", date:"2026-04-30", fee:null},
-      {stage:"D2", date:"2026-06-30", fee:null},
-      {stage:"D3", date:"2026-08-31", fee:null},
-      {stage:"Late", date:"2026-09-30", fee:null}
-    ],
-    formatApply:"Online screener (FilmFreeway upload OR Vimeo/YouTube/Google Drive private link).",
-    registrationLink:"https://filmfreeway.com/YathaKathaInternationalFilmandLiteratureFestival"
-  },
-  {
-    name:"Karnataka Intl Film Festival (KIFF, Hubballi-Dharwad)",
-    state:"Karnataka",
-    priority:5, decision:"Strategic Apply",
-    deadlines:[],
-    formatApply:"Details TBD — check website.",
-    registrationLink:"https://karnatakaiff.com/"
-  },
-  {
-    name:"The NEZ International Film Festival (NIFF)",
-    state:"Kolkata",
-    priority:5, decision:"Strategic Apply",
-    deadlines:[
-      {stage:"Early", date:"2027-01-31", fee:null},
-      {stage:"Late", date:"2027-02-28", fee:null}
-    ],
-    formatApply:"Online screener via FilmFreeway (Vimeo/YouTube/Google Drive private link).",
-    registrationLink:"https://filmfreeway.com/nezinternationalfilmfestival"
-  },
-  {
-    name:"Darbhanga International Film Festival",
-    state:"Bihar",
-    priority:5, decision:"Strategic Apply",
-    deadlines:[],
-    formatApply:"Online screener (Vimeo/Google Drive/YouTube private link). Strict email subject format required with required documents including synopsis, cast & credits, director bio, stills, poster (portrait + landscape), and citizenship proof.",
-    registrationLink:"https://filmfreeway.com/DarbhangaIFF"
-  },
-  {
-    name:"Indian Panorama International Film Festival (IPIFF)",
-    state:"Goa",
-    priority:2, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-30", fee:40},
-      {stage:"D2", date:"2026-06-15", fee:45},
-      {stage:"D3", date:"2026-08-15", fee:50},
-      {stage:"D4", date:"2026-09-15", fee:55},
-      {stage:"Late", date:"2027-02-20", fee:90}
-    ],
-    formatApply:"Online screeners for preview. DCP / high-quality hard drive / high-resolution downloadable link if selected.",
-    registrationLink:"https://indianpanoramainternationalfilmfestival.com/submission/"
-  },
-  {
-    name:"15th Delhi Shorts International Film Festival 2026",
-    state:"New Delhi",
-    priority:3, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-19", fee:55},
-      {stage:"D2", date:"2026-05-09", fee:null},
-      {stage:"Late", date:"2026-10-05", fee:55}
-    ],
-    formatApply:"Online screener via private Vimeo/Drive/YouTube link.",
-    registrationLink:"https://filmfreeway.com/delhi-shorts-international-film-festival"
-  },
-  {
-    name:"ICFF — Indian Cine Film Festival",
-    state:"Mumbai",
-    priority:3, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-07", fee:79.17},
-      {stage:"D2", date:"2026-05-17", fee:null},
-      {stage:"D3", date:"2026-06-06", fee:null},
-      {stage:"D4", date:"2026-06-26", fee:null},
-      {stage:"Late", date:"2026-08-25", fee:79.17}
-    ],
-    formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer link. Short Documentary (up to 60 min).",
-    registrationLink:"https://filmfreeway.com/IndianCineFilmFestival"
-  },
-  {
-    name:"IWFF — Indian World Film Festival",
-    state:"Hyderabad",
-    priority:3, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-05-01", fee:null},
-      {stage:"D2", date:"2026-05-21", fee:null},
-      {stage:"D3", date:"2026-06-10", fee:null},
-      {stage:"D4", date:"2026-06-30", fee:null},
-      {stage:"Late", date:"2027-02-15", fee:null}
-    ],
-    formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer private link.",
-    registrationLink:"https://filmfreeway.com/Indian-World-Film-Festival"
-  },
-  {
-    name:"India Movie Awards",
-    state:"Kolkata",
-    priority:2, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-05-06", fee:20},
-      {stage:"D2", date:"2026-05-26", fee:20},
-      {stage:"D3", date:"2026-06-16", fee:20},
-      {stage:"Late", date:"2026-07-07", fee:20}
-    ],
-    formatApply:"Entry form via FilmFreeway.",
-    registrationLink:"https://filmfreeway.com/INDIANMOVIEAWARDS"
-  },
-  {
-    name:"INDIA CHICAGO INTERNATIONAL FILM FESTIVAL (ICIFF)",
-    state:"Kolkata",
-    priority:2, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-11", fee:20},
-      {stage:"Late", date:"2026-04-12", fee:20}
-    ],
-    formatApply:"Entry form via FilmFreeway.",
-    registrationLink:"https://filmfreeway.com/INDIACHICAGOINTERNATIONALFILMFESTIVAL"
-  },
-  {
-    name:"The Noida International Film Festival (NIFF)",
-    state:"Noida",
-    priority:3, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-19", fee:null},
-      {stage:"D2", date:"2026-05-09", fee:null},
-      {stage:"D3", date:"2026-05-29", fee:null},
-      {stage:"D4", date:"2026-06-20", fee:null},
-      {stage:"Late", date:"2026-01-10", fee:null}
-    ],
-    formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer.",
-    registrationLink:"https://filmfreeway.com/NoidaInternationalFilmFestival"
-  },
-  {
-    name:"India Cine Film Festival (ICFF) — Miniboxoffice",
-    state:"Mumbai",
-    priority:3, decision:"Skip",
-    deadlines:[
-      {stage:"Early", date:"2026-04-27", fee:null},
-      {stage:"D2", date:"2026-05-17", fee:null},
-      {stage:"D3", date:"2026-06-06", fee:null},
-      {stage:"D4", date:"2026-06-26", fee:null},
-      {stage:"Late", date:"2026-08-25", fee:null}
-    ],
-    formatApply:"Entry form, screener via FilmFreeway.",
-    registrationLink:"https://filmfreeway.com/IndiaCineFilmFestival"
-  }
+  {name:"MAMI — Mumbai Film Festival",state:"Mumbai",priority:10,decision:"Priority Apply",deadlines:[{stage:"Deadline",date:"2026-07-15",fee:null}],formatApply:"Director statement, synopsis (short + long), stills, screener link, bio. Free for Indian films.",registrationLink:"https://www.mumbaifilmfestival.com/"},
+  {name:"MIFF — 19th Mumbai Intl Film Festival",state:"Mumbai",priority:10,decision:"Priority Apply",deadlines:[],formatApply:"H.264/MP4 under 2 GB, 1920x1080. Upload via Vimeo link or Google Drive. Supporting docs must reach MIFF office by 17 April 2026 (6:00 PM). National Competition.",registrationLink:"https://miff.in/"},
+  {name:"IFFI Goa — 57th International Film Festival of India",state:"Goa",priority:10,decision:"Priority Apply",deadlines:[],formatApply:"Online application form, director bio, synopsis, screener link, production stills. Indian Panorama — Non-Feature (Documentary).",registrationLink:"https://www.iffigoa.org/"},
+  {name:"DIFF — Dharamshala Int'l Film Festival",state:"Dharamshala HP",priority:9,decision:"Priority Apply",deadlines:[{stage:"Early",date:"2026-06-02",fee:35},{stage:"Regular",date:"2026-07-02",fee:45},{stage:"Late",date:"2026-08-02",fee:65}],formatApply:"Online screener (Vimeo/YouTube unlisted link with password), HD format only. Film must be a Dharamshala premiere.",registrationLink:"https://filmfreeway.com/DharamshalaInternationalFilmFestival"},
+  {name:"IDSFFK — Int'l Documentary & Short Film Festival of Kerala",state:"Thiruvananthapuram",priority:9,decision:"Priority Apply",deadlines:[{stage:"Deadline",date:"2026-05-05",fee:null}],formatApply:"Online screener only (Vimeo/YouTube/Google Drive private link). No DVDs for preview. CBFC certificate OR signed affidavit required.",registrationLink:"https://vp.eventival.com/idsffk/idsffk2025/film-form/film-submission"},
+  {name:"MIDSFF — Madurai Int'l Documentary & Short Film Festival",state:"Madurai TN",priority:8,decision:"Priority Apply",deadlines:[{stage:"Deadline",date:"2026-09-15",fee:50}],formatApply:"Online screener, entry form, bio, synopsis via FilmFreeway. India's oldest doc festival (since 1998).",registrationLink:"https://filmfreeway.com/MaduraiFilmFestival"},
+  {name:"Jio MAMI Short Film Festival",state:"Mumbai",priority:8,decision:"Priority Apply",deadlines:[{stage:"Deadline",date:"2026-09-30",fee:30}],formatApply:"Entry form, screener, bio. Only eligible if documentary is under 40 minutes.",registrationLink:"https://www.mumbaifilmfestival.com/"},
+  {name:"Chennai Intl Documentary & Short Film Festival",state:"Chennai",priority:8,decision:"Priority Apply",deadlines:[{stage:"Early",date:"2026-05-01",fee:10},{stage:"Regular",date:"2026-11-01",fee:12},{stage:"Late",date:"2026-12-01",fee:15}],formatApply:"Online screener via FilmFreeway or private Vimeo/YouTube/Google Drive link. Non-competitive festival.",registrationLink:"https://filmfreeway.com/chennaidocshortfest"},
+  {name:"Smita Patil Documentary & Short Film Festival",state:"Pune",priority:7,decision:"Apply",deadlines:[],formatApply:"Entry form, screener, bio. Free to enter. Deadline passed for 2026 — watch next cycle.",registrationLink:"https://spiffpune.com/"},
+  {name:"IFFD — Int'l Film Festival Delhi",state:"New Delhi",priority:6,decision:"Apply",deadlines:[],formatApply:"Entry form, screener, bio, synopsis via FilmFreeway.",registrationLink:"https://www.iffdelhi.com/"},
+  {name:"Jaipur IFF (JIFF)",state:"Jaipur",priority:6,decision:"Apply",deadlines:[{stage:"Deadline",date:"2026-08-15",fee:65}],formatApply:"Entry form, screener link, bio. Rolling submissions model.",registrationLink:"https://filmfreeway.com/InternationalScreenplayCompetition-ISCatJIFF"},
+  {name:"NDFF — New Delhi Film Festival",state:"New Delhi",priority:6,decision:"Apply",deadlines:[{stage:"Deadline",date:"2026-06-16",fee:50}],formatApply:"Online screener (Vimeo/YouTube/Google Drive private link) preferred. Also accepts DVD/Blu-ray/DCP if mailed.",registrationLink:"https://ndffindia.org/"},
+  {name:"MSDFF — Mumbai Short & Documentary Film Festival",state:"Mumbai",priority:6,decision:"Apply",deadlines:[],formatApply:"Entry form, screener, bio via FilmFreeway.",registrationLink:"https://msdffest.com/"},
+  {name:"16th International Film Festivals in Jaipur",state:"Jaipur",priority:6,decision:"Apply",deadlines:[{stage:"Early",date:"2026-04-30",fee:30},{stage:"Regular",date:"2026-06-30",fee:35},{stage:"Late",date:"2026-07-30",fee:35}],formatApply:"Online screener (Vimeo/YouTube/Google Drive) OR DVD/Blu-ray. Short doc (<45 min). Direct email saves ~40% vs FilmFreeway.",registrationLink:"https://jiffindia.org/"},
+  {name:"KSIFF-26 (15th Kolkata Shorts Intl Film Festival)",state:"Kolkata",priority:3,decision:"Apply",deadlines:[{stage:"Early",date:"2026-04-18",fee:null},{stage:"D2",date:"2026-05-08",fee:null},{stage:"D3",date:"2026-05-28",fee:null},{stage:"D4",date:"2026-06-17",fee:null},{stage:"Late",date:"2026-07-07",fee:44}],formatApply:"Online screener via Vimeo/Google Drive/YouTube private link (FilmFreeway accepted).",registrationLink:"https://filmfreeway.com/KolkataShortsInternationalFilmFestival"},
+  {name:"MSIFF — 15th Mumbai Intl Short Film Festival",state:"Mumbai",priority:3,decision:"Apply",deadlines:[{stage:"Early",date:"2026-04-24",fee:17},{stage:"D2",date:"2026-05-14",fee:null},{stage:"D3",date:"2026-06-03",fee:null},{stage:"Late",date:"2026-11-19",fee:17}],formatApply:"Online screener (Vimeo/Google Drive/YouTube private link).",registrationLink:"https://filmfreeway.com/MSIFF"},
+  {name:"Mumbai Indi Film Festival",state:"Mumbai",priority:null,decision:"Apply",deadlines:[{stage:"Early",date:null,fee:54},{stage:"Late",date:"2026-07-15",fee:null}],formatApply:"Entry form, screener.",registrationLink:"https://filmfreeway.com/mumbaiindifilmfest"},
+  {name:"F5IFF — Fest5 International Film Festival",state:"Multiple cities",priority:4,decision:"Strategic Apply",deadlines:[{stage:"Early",date:"2026-04-22",fee:17},{stage:"Regular",date:"2026-07-22",fee:22},{stage:"Late",date:"2026-07-22",fee:27}],formatApply:"Online screener only (Vimeo/Google Drive/YouTube private link). Direct via f5iff.com cheaper than FilmFreeway.",registrationLink:"https://www.f5iff.com/film-submission"},
+  {name:"YathaKatha Film & Literature Festival",state:"Mumbai",priority:5,decision:"Strategic Apply",deadlines:[{stage:"Early",date:"2026-04-30",fee:null},{stage:"D2",date:"2026-06-30",fee:null},{stage:"D3",date:"2026-08-31",fee:null},{stage:"Late",date:"2026-09-30",fee:null}],formatApply:"Online screener (FilmFreeway upload OR Vimeo/YouTube/Google Drive private link).",registrationLink:"https://filmfreeway.com/YathaKathaInternationalFilmandLiteratureFestival"},
+  {name:"Karnataka Intl Film Festival (KIFF, Hubballi-Dharwad)",state:"Karnataka",priority:5,decision:"Strategic Apply",deadlines:[],formatApply:"Details TBD — check website.",registrationLink:"https://karnatakaiff.com/"},
+  {name:"The NEZ International Film Festival (NIFF)",state:"Kolkata",priority:5,decision:"Strategic Apply",deadlines:[{stage:"Early",date:"2027-01-31",fee:null},{stage:"Late",date:"2027-02-28",fee:null}],formatApply:"Online screener via FilmFreeway (Vimeo/YouTube/Google Drive private link).",registrationLink:"https://filmfreeway.com/nezinternationalfilmfestival"},
+  {name:"Darbhanga International Film Festival",state:"Bihar",priority:5,decision:"Strategic Apply",deadlines:[],formatApply:"Online screener (Vimeo/Google Drive/YouTube private link). Strict email subject format required with extensive supporting docs.",registrationLink:"https://filmfreeway.com/DarbhangaIFF"},
+  {name:"Indian Panorama International Film Festival (IPIFF)",state:"Goa",priority:2,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-30",fee:40},{stage:"D2",date:"2026-06-15",fee:45},{stage:"D3",date:"2026-08-15",fee:50},{stage:"D4",date:"2026-09-15",fee:55},{stage:"Late",date:"2027-02-20",fee:90}],formatApply:"Online screeners for preview. DCP / high-quality hard drive / high-res downloadable link if selected.",registrationLink:"https://indianpanoramainternationalfilmfestival.com/submission/"},
+  {name:"15th Delhi Shorts Intl Film Festival 2026",state:"New Delhi",priority:3,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-19",fee:55},{stage:"D2",date:"2026-05-09",fee:null},{stage:"Late",date:"2026-10-05",fee:55}],formatApply:"Online screener via private Vimeo/Drive/YouTube link.",registrationLink:"https://filmfreeway.com/delhi-shorts-international-film-festival"},
+  {name:"ICFF — Indian Cine Film Festival",state:"Mumbai",priority:3,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-07",fee:79.17},{stage:"D2",date:"2026-05-17",fee:null},{stage:"D3",date:"2026-06-06",fee:null},{stage:"D4",date:"2026-06-26",fee:null},{stage:"Late",date:"2026-08-25",fee:79.17}],formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer link. Short Documentary (up to 60 min).",registrationLink:"https://filmfreeway.com/IndianCineFilmFestival"},
+  {name:"IWFF — Indian World Film Festival",state:"Hyderabad",priority:3,decision:"Skip",deadlines:[{stage:"Early",date:"2026-05-01",fee:null},{stage:"D2",date:"2026-05-21",fee:null},{stage:"D3",date:"2026-06-10",fee:null},{stage:"D4",date:"2026-06-30",fee:null},{stage:"Late",date:"2027-02-15",fee:null}],formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer private link.",registrationLink:"https://filmfreeway.com/Indian-World-Film-Festival"},
+  {name:"India Movie Awards",state:"Kolkata",priority:2,decision:"Skip",deadlines:[{stage:"Early",date:"2026-05-06",fee:20},{stage:"D2",date:"2026-05-26",fee:20},{stage:"D3",date:"2026-06-16",fee:20},{stage:"Late",date:"2026-07-07",fee:20}],formatApply:"Entry form via FilmFreeway.",registrationLink:"https://filmfreeway.com/INDIANMOVIEAWARDS"},
+  {name:"INDIA CHICAGO INTERNATIONAL FILM FESTIVAL (ICIFF)",state:"Kolkata",priority:2,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-11",fee:20},{stage:"Late",date:"2026-04-12",fee:20}],formatApply:"Entry form via FilmFreeway.",registrationLink:"https://filmfreeway.com/INDIACHICAGOINTERNATIONALFILMFESTIVAL"},
+  {name:"The Noida International Film Festival (NIFF)",state:"Noida",priority:3,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-19",fee:null},{stage:"D2",date:"2026-05-09",fee:null},{stage:"D3",date:"2026-05-29",fee:null},{stage:"D4",date:"2026-06-20",fee:null},{stage:"Late",date:"2026-01-10",fee:null}],formatApply:"Online screener via Vimeo/Google Drive/YouTube/WeTransfer.",registrationLink:"https://filmfreeway.com/NoidaInternationalFilmFestival"},
+  {name:"India Cine Film Festival (ICFF) — Miniboxoffice",state:"Mumbai",priority:3,decision:"Skip",deadlines:[{stage:"Early",date:"2026-04-27",fee:null},{stage:"D2",date:"2026-05-17",fee:null},{stage:"D3",date:"2026-06-06",fee:null},{stage:"D4",date:"2026-06-26",fee:null},{stage:"Late",date:"2026-08-25",fee:null}],formatApply:"Entry form, screener via FilmFreeway.",registrationLink:"https://filmfreeway.com/IndiaCineFilmFestival"}
 ];
 
-let currentFilter = 'all';
-let currentSort = 'priority';
-let searchTerm = '';
-
-const today = new Date(); today.setHours(0,0,0,0);
+let currentFilter='all', currentSort='priority', sortDir=-1, searchTerm='';
+const today=new Date(); today.setHours(0,0,0,0);
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-
-function formatDate(d){
-  if(!d) return '—';
-  const dt = new Date(d); if(isNaN(dt)) return d;
-  return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-}
-
+function formatDate(d){if(!d)return '—';const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
 function getNextDeadline(f){
-  if(!f.deadlines||!f.deadlines.length) return null;
-  const future = f.deadlines.filter(d=>d.date && new Date(d.date)>=today).sort((a,b)=>new Date(a.date)-new Date(b.date));
-  if(future.length) return future[0];
-  const withDate = f.deadlines.filter(d=>d.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  return withDate[0] || null;
+  if(!f.deadlines||!f.deadlines.length)return null;
+  const future=f.deadlines.filter(d=>d.date&&new Date(d.date)>=today).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(future.length)return future[0];
+  const withDate=f.deadlines.filter(d=>d.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return withDate[0]||null;
 }
-
-function daysUntil(d){
-  const dt = new Date(d); dt.setHours(0,0,0,0);
-  return Math.round((dt-today)/(1000*60*60*24));
-}
-
-function priorityClass(p){
-  if(p==null) return 'pri-0';
-  const n = Math.max(0,Math.min(10,Math.round(p)));
-  return 'pri-'+n;
-}
-
-function decisionClass(d){
-  if(!d) return '';
-  const s = d.toLowerCase();
-  if(s.includes('skip')) return 'd-skip';
-  if(s.includes('strategic')) return 'd-strategic';
-  return 'd-apply';
-}
-
-function decisionMatches(d, filter){
-  if(filter==='all') return true;
-  const s = (d||'').toLowerCase();
-  if(filter==='priority') return s.includes('priority');
-  if(filter==='apply') return s==='apply'||(s.includes('apply')&&!s.includes('priority')&&!s.includes('strategic')&&!s.includes('skip'));
-  if(filter==='strategic') return s.includes('strategic');
-  if(filter==='skip') return s.includes('skip');
+function daysUntil(d){const dt=new Date(d);dt.setHours(0,0,0,0);return Math.round((dt-today)/(1000*60*60*24))}
+function priorityClass(p){if(p==null)return 'pri-null';return 'pri-'+Math.max(0,Math.min(10,Math.round(p)))}
+function decisionClass(d){if(!d)return '';const s=d.toLowerCase();if(s.includes('skip'))return 'd-skip';if(s.includes('strategic'))return 'd-strategic';return 'd-apply'}
+function decisionMatches(d,f){
+  if(f==='all')return true;
+  const s=(d||'').toLowerCase();
+  if(f==='priority')return s.includes('priority');
+  if(f==='apply')return s==='apply'||(s.includes('apply')&&!s.includes('priority')&&!s.includes('strategic'));
+  if(f==='strategic')return s.includes('strategic');
+  if(f==='skip')return s.includes('skip');
   return true;
 }
 
 function renderSummary(){
-  const all = FESTIVALS;
-  const priority = all.filter(f=>decisionMatches(f.decision,'priority')).length;
-  const apply = all.filter(f=>decisionMatches(f.decision,'apply')).length;
-  const strategic = all.filter(f=>decisionMatches(f.decision,'strategic')).length;
-  const skip = all.filter(f=>decisionMatches(f.decision,'skip')).length;
-  const upcoming = all.filter(f=>{
-    const n = getNextDeadline(f);
-    if(!n||!n.date) return false;
-    const d = daysUntil(n.date);
-    return d>=0 && d<=30;
-  }).length;
-
-  document.getElementById('summary').innerHTML = `
-    <div class="stat"><div class="v">${all.length}</div><div class="l">Festivals</div></div>
-    <div class="stat"><div class="v">${priority}</div><div class="l">Priority</div></div>
-    <div class="stat"><div class="v">${apply}</div><div class="l">Apply</div></div>
-    <div class="stat"><div class="v">${strategic}</div><div class="l">Strategic</div></div>
-    <div class="stat"><div class="v">${skip}</div><div class="l">Skip</div></div>
-    <div class="stat"><div class="v">${upcoming}</div><div class="l">Due in 30d</div></div>
-  `;
+  const all=FESTIVALS;
+  const pri=all.filter(f=>decisionMatches(f.decision,'priority')).length;
+  const app=all.filter(f=>decisionMatches(f.decision,'apply')).length;
+  const str=all.filter(f=>decisionMatches(f.decision,'strategic')).length;
+  const sk=all.filter(f=>decisionMatches(f.decision,'skip')).length;
+  const up=all.filter(f=>{const n=getNextDeadline(f);if(!n||!n.date)return false;const d=daysUntil(n.date);return d>=0&&d<=30}).length;
+  document.getElementById('summary').innerHTML=`
+    <span><b>${all.length}</b>Total</span>
+    <span><b>${pri}</b>Priority</span>
+    <span><b>${app}</b>Apply</span>
+    <span><b>${str}</b>Strategic</span>
+    <span><b>${sk}</b>Skip</span>
+    <span><b>${up}</b>Due in 30d</span>`;
 }
 
 function render(){
-  let list = FESTIVALS.filter(f=>decisionMatches(f.decision, currentFilter));
-  if(searchTerm){
-    const t = searchTerm.toLowerCase();
-    list = list.filter(f=>f.name.toLowerCase().includes(t)||(f.state||'').toLowerCase().includes(t));
-  }
+  let list=FESTIVALS.filter(f=>decisionMatches(f.decision,currentFilter));
+  if(searchTerm){const t=searchTerm.toLowerCase();list=list.filter(f=>f.name.toLowerCase().includes(t)||(f.state||'').toLowerCase().includes(t))}
 
   list.sort((a,b)=>{
     if(currentSort==='priority'){
       const pa=a.priority==null?-1:a.priority, pb=b.priority==null?-1:b.priority;
-      return pb-pa;
+      return (pb-pa)*(sortDir===-1?1:-1);
     }
-    const na = getNextDeadline(a), nb = getNextDeadline(b);
-    const da = na&&na.date ? new Date(na.date).getTime() : Infinity;
-    const db = nb&&nb.date ? new Date(nb.date).getTime() : Infinity;
-    return da-db;
+    if(currentSort==='name'){
+      return a.name.localeCompare(b.name)*sortDir;
+    }
+    const na=getNextDeadline(a), nb=getNextDeadline(b);
+    const da=na&&na.date?new Date(na.date).getTime():Infinity;
+    const db=nb&&nb.date?new Date(nb.date).getTime():Infinity;
+    return (da-db)*sortDir;
   });
 
-  const el = document.getElementById('festivalsList');
-  if(!list.length){
-    el.innerHTML = '<div class="empty"><p>No festivals match your filters</p></div>';
-    return;
-  }
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    th.classList.toggle('sorted',th.dataset.sort===currentSort);
+    const ar=th.querySelector('.arrow');
+    if(ar){
+      if(th.dataset.sort===currentSort){
+        ar.textContent = currentSort==='priority' ? (sortDir===-1?'\u2193':'\u2191') : (sortDir===-1?'\u2191':'\u2193');
+      } else {
+        ar.textContent='\u2195';
+      }
+    }
+  });
 
-  el.innerHTML = list.map(f=>{
-    const next = getNextDeadline(f);
-    const nextDateStr = next && next.date ? new Date(next.date) : null;
+  const tb=document.getElementById('tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">No festivals match your filters</div></td></tr>';return}
 
-    // Ladder
-    let ladderHtml = '';
-    if(f.deadlines && f.deadlines.length){
-      const sorted = [...f.deadlines].sort((a,b)=>{
-        if(!a.date) return 1; if(!b.date) return -1;
-        return new Date(a.date)-new Date(b.date);
-      });
-      ladderHtml = '<div class="ladder">' + sorted.map(dl=>{
-        let cls = '';
-        let countdown = '';
+  tb.innerHTML=list.map(f=>{
+    const next=getNextDeadline(f);
+    let dlHtml='';
+    if(f.deadlines&&f.deadlines.length){
+      const sorted=[...f.deadlines].sort((a,b)=>{if(!a.date)return 1;if(!b.date)return -1;return new Date(a.date)-new Date(b.date)});
+      dlHtml='<div class="deadlines-row">'+sorted.map(dl=>{
+        let cls='';
         if(dl.date){
-          const days = daysUntil(dl.date);
+          const days=daysUntil(dl.date);
           if(days<0) cls='passed';
-          else if(next && dl.date===next.date && days>=0) {
-            cls='current';
-            if(days===0) countdown='<div class="rung-countdown">Today</div>';
-            else if(days===1) countdown='<div class="rung-countdown">Tomorrow</div>';
-            else if(days<=14) countdown=`<div class="rung-countdown">${days} days left</div>`;
-          }
+          else if(next&&dl.date===next.date) cls='current';
         }
-        const feeStr = dl.fee!=null ? '$'+(Number.isInteger(dl.fee)?dl.fee:dl.fee.toFixed(2)) : (dl.fee===0 ? 'Free' : '—');
-        return `<div class="rung ${cls}">
-          <div class="rung-stage">${esc(dl.stage)}</div>
-          <div class="rung-date">${formatDate(dl.date)}</div>
-          <div class="rung-fee">${feeStr}</div>
-          ${countdown}
-        </div>`;
-      }).join('') + '</div>';
+        const feeStr=dl.fee!=null?'$'+(Number.isInteger(dl.fee)?dl.fee:dl.fee.toFixed(2)):(dl.fee===0?'Free':'—');
+        return `<div class="dl ${cls}"><div class="dl-stage">${esc(dl.stage)}</div><div class="dl-date">${formatDate(dl.date)}</div><div class="dl-fee">${feeStr}</div></div>`;
+      }).join('')+'</div>';
     } else {
-      ladderHtml = '<div class="ladder-empty">Deadline info not yet available</div>';
+      dlHtml='<span class="no-dl">TBD</span>';
     }
 
-    const priClass = priorityClass(f.priority);
-    const priVal = f.priority==null ? '—' : f.priority;
-    const decCls = decisionClass(f.decision);
-    const decText = f.decision || '';
+    const priCls=priorityClass(f.priority);
+    const priVal=f.priority==null?'—':f.priority;
+    const decCls=decisionClass(f.decision);
+    const decText=f.decision||'';
+    const apply=f.registrationLink?`<a class="apply-btn" href="${esc(f.registrationLink)}" target="_blank" rel="noopener">Apply \u2192</a>`:`<span class="apply-btn disabled">No link</span>`;
 
-    const applyDisabled = !f.registrationLink;
-    const applyBtn = applyDisabled
-      ? `<span class="apply-btn disabled">No link</span>`
-      : `<a class="apply-btn" href="${esc(f.registrationLink)}" target="_blank" rel="noopener">Apply now \u2192</a>`;
-
-    return `<div class="fest">
-      <div class="fest-header">
-        <div class="fest-title-block">
-          <div class="fest-name">${f.registrationLink
-              ? `<a href="${esc(f.registrationLink)}" target="_blank" rel="noopener">${esc(f.name)}</a>`
-              : esc(f.name)}</div>
-          <div class="fest-meta">
-            <span class="state">${esc(f.state||'')}</span>
-            ${decText?`<span class="decision ${decCls}">${esc(decText)}</span>`:''}
-          </div>
-        </div>
-        <div class="priority-box">
-          <div class="priority-circle ${priClass}">${priVal}</div>
-          <div class="priority-label">Priority</div>
-        </div>
-      </div>
-      <div class="ladder-wrap">
-        <div class="ladder-label">Deadlines & Fees</div>
-        ${ladderHtml}
-      </div>
-      <div class="fest-bottom">
-        <div class="format-block">
-          <div class="format-label">Format Accepted (for application)</div>
-          <div class="format-text">${esc(f.formatApply||'')}</div>
-        </div>
-        ${applyBtn}
-      </div>
-    </div>`;
+    return `<tr>
+      <td class="c-pri"><div class="pri-circle ${priCls}">${priVal}</div></td>
+      <td class="c-name">
+        <strong>${f.registrationLink?`<a href="${esc(f.registrationLink)}" target="_blank" rel="noopener">${esc(f.name)}</a>`:esc(f.name)}</strong>
+        <div class="sub">${esc(f.state||'')}</div>
+      </td>
+      <td class="c-decision">${decText?`<span class="decision ${decCls}">${esc(decText)}</span>`:''}</td>
+      <td class="c-deadlines">${dlHtml}</td>
+      <td class="c-format"><div class="format-text" title="${esc(f.formatApply||'')}">${esc(f.formatApply||'')}</div></td>
+      <td class="c-apply">${apply}</td>
+    </tr>`;
   }).join('');
 }
 
-// Events
-document.getElementById('searchInput').addEventListener('input', e=>{
-  searchTerm = e.target.value;
-  render();
-});
+document.getElementById('searchInput').addEventListener('input',e=>{searchTerm=e.target.value;render()});
 
 document.querySelectorAll('.chip[data-filter]').forEach(c=>{
-  c.addEventListener('click', ()=>{
+  c.addEventListener('click',()=>{
     document.querySelectorAll('.chip[data-filter]').forEach(x=>x.classList.remove('active'));
     c.classList.add('active');
-    currentFilter = c.dataset.filter;
+    currentFilter=c.dataset.filter;
     render();
   });
 });
 
 document.querySelectorAll('.chip[data-sort]').forEach(c=>{
-  c.addEventListener('click', ()=>{
+  c.addEventListener('click',()=>{
     document.querySelectorAll('.chip[data-sort]').forEach(x=>x.classList.remove('active'));
     c.classList.add('active');
-    currentSort = c.dataset.sort;
+    if(currentSort===c.dataset.sort) sortDir*=-1; else {currentSort=c.dataset.sort; sortDir=c.dataset.sort==='priority'?-1:1}
+    render();
+  });
+});
+
+document.querySelectorAll('th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const s=th.dataset.sort;
+    if(currentSort===s) sortDir*=-1; else {currentSort=s; sortDir=s==='priority'?-1:1}
+    document.querySelectorAll('.chip[data-sort]').forEach(x=>x.classList.toggle('active',x.dataset.sort===s));
     render();
   });
 });
