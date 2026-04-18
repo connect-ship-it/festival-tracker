@@ -297,12 +297,12 @@ function render(){
     const priVal=f.priority==null?'—':f.priority;
     const decCls=decisionClass(f.decision);
     const decText=f.decision||'';
-    const apply=f.registrationLink?`<a class="apply-btn" href="${esc(f.registrationLink)}" target="_blank" rel="noopener">Apply \u2192</a>`:`<span class="apply-btn disabled">No link</span>`;
+    const apply=f.registrationLink?`<button type="button" class="apply-btn" data-url="${esc(f.registrationLink)}">Apply \u2192</button>`:`<span class="apply-btn disabled">No link</span>`;
 
     return `<tr>
       <td class="c-pri"><div class="pri-circle ${priCls}">${priVal}</div></td>
       <td class="c-name">
-        <strong>${f.registrationLink?`<a href="${esc(f.registrationLink)}" target="_blank" rel="noopener">${esc(f.name)}</a>`:esc(f.name)}</strong>
+        <strong>${f.registrationLink?`<a href="${esc(f.registrationLink)}" target="_blank" rel="noopener noreferrer" data-url="${esc(f.registrationLink)}">${esc(f.name)}</a>`:esc(f.name)}</strong>
         <div class="sub">${esc(f.state||'')}</div>
       </td>
       <td class="c-decision">${decText?`<span class="decision ${decCls}">${esc(decText)}</span>`:''}</td>
@@ -340,6 +340,17 @@ document.querySelectorAll('th.sortable').forEach(th=>{
     document.querySelectorAll('.chip[data-sort]').forEach(x=>x.classList.toggle('active',x.dataset.sort===s));
     render();
   });
+});
+
+// Delegated click handler for Apply buttons and Festival Name links — bulletproof URL opening
+document.getElementById('tbody').addEventListener('click', e=>{
+  const target = e.target.closest('[data-url]');
+  if(!target) return;
+  const url = target.dataset.url;
+  if(!url) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 renderSummary();
