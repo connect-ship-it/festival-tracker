@@ -240,10 +240,9 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
   <div class="controls">
     <input class="search" id="searchInput" placeholder="Search festival...">
     <div class="chip active" data-filter="all">All</div>
-    <div class="chip" data-filter="priority">Priority Apply</div>
-    <div class="chip" data-filter="apply">Apply</div>
-    <div class="chip" data-filter="strategic">Consider</div>
-    <div class="chip" data-filter="skip">Skip</div>
+    <div class="chip" data-filter="tierS">Tier S</div>
+    <div class="chip" data-filter="tierA">Tier A</div>
+    <div class="chip" data-filter="tierB">Tier B</div>
     <div class="chip" data-filter="submitted">Submitted</div>
     <div class="chip" data-filter="urgent">⚡ Urgent (≤7d)</div>
     <div class="view-toggle">
@@ -438,22 +437,20 @@ function renderSummary(){
   const inProgress=all.filter(f=>getS(f)==='In progress').length;
   const remaining=all.length-submitted;
   const urgent=all.filter(f=>{const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&getS(f)!=='Submitted'}).length;
-  const priority=all.filter(f=>f.rec==='Priority'&&getS(f)!=='Submitted').length;
 
   document.getElementById('summary').innerHTML=`
     <span><b>${all.length}</b>Total</span>
     <span><b>${submitted}</b>Submitted</span>
     <span><b>${inProgress}</b>In progress</span>
     <span><b>${remaining}</b>Remaining</span>
-    <span class="urgent"><b>${urgent}</b>Urgent (≤7d)</span>
-    <span><b>${priority}</b>Priority Apply</span>`;
+    <span class="urgent"><b>${urgent}</b>Urgent (≤7d)</span>`;
 
   renderMoneyRow();
 }
 
 function renderMoneyRow(){
   const getS=f=>getStatus(f.name)||f.status;
-  const isSkipped=f=>{const s=getS(f);return s==='Skipped'||(s==='Not started'&&f.rec==='Skip')};
+  const isSkipped=f=>getS(f)==='Skipped';
 
   // Money already spent — submitted festivals
   const spent=FESTIVALS.filter(f=>getS(f)==='Submitted'&&f.fee).reduce((s,f)=>s+f.fee,0);
@@ -464,15 +461,10 @@ function renderMoneyRow(){
     return s!=='Submitted'&&!isSkipped(f)&&f.fee
   }).reduce((sum,f)=>sum+f.fee,0);
 
-  // Money saved by skipping
-  const skippedAmount=FESTIVALS.filter(f=>isSkipped(f)&&f.fee).reduce((s,f)=>s+f.fee,0);
-
   const total=spent+planned;
 
-  // Counts for sub-text
   const spentCount=FESTIVALS.filter(f=>getS(f)==='Submitted').length;
   const plannedCount=FESTIVALS.filter(f=>{const s=getS(f);return s!=='Submitted'&&!isSkipped(f)}).length;
-  const skippedCount=FESTIVALS.filter(f=>isSkipped(f)).length;
 
   document.getElementById('moneyRow').innerHTML=`
     <div class="money-card spent">
@@ -488,12 +480,7 @@ function renderMoneyRow(){
     <div class="money-card budget">
       <div class="label">Total May budget</div>
       <div class="amount">$${total.toFixed(2)}</div>
-      <div class="sub">Spent + Planned (excl. skipped)</div>
-    </div>
-    <div class="money-card skipped">
-      <div class="label">Saved by skipping</div>
-      <div class="amount">$${skippedAmount.toFixed(2)}</div>
-      <div class="sub">${skippedCount} skip-flagged festival${skippedCount!==1?'s':''}</div>
+      <div class="sub">Spent + Planned</div>
     </div>`;
 }
 
@@ -503,10 +490,9 @@ function render(){
   if(currentFilter!=='all'){
     list=list.filter(f=>{
       const status=getStatus(f.name)||f.status;
-      if(currentFilter==='priority') return f.rec==='Priority';
-      if(currentFilter==='apply') return f.rec==='Apply';
-      if(currentFilter==='strategic') return f.rec==='Strategic';
-      if(currentFilter==='skip') return f.rec==='Skip';
+      if(currentFilter==='tierS') return f.tier==='S';
+      if(currentFilter==='tierA') return f.tier==='A';
+      if(currentFilter==='tierB') return f.tier==='B';
       if(currentFilter==='submitted') return status==='Submitted';
       if(currentFilter==='urgent'){const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&status!=='Submitted'}
       return true;
@@ -552,7 +538,6 @@ function renderCardView(list,el){
         <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b></span>
         ${f.category?`<span class="fest-cat">${esc(f.category)}</span>`:''}
       </div>
-      ${f.rec?`<div><span class="fest-rec ${recClass}">${esc(f.rec).toUpperCase()}</span></div>`:''}
       ${f.notes?`<div class="fest-notes">${esc(f.notes)}</div>`:''}
       <div class="fest-actions">
         <select class="status-select" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
@@ -587,7 +572,6 @@ function renderListView(list,el){
       <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}</td>
       <td class="lv-deadline ${dlClass}">${fmtDate(f.deadline)}${dlSuffix}</td>
       <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}</td>
-      <td>${f.rec?`<span class="lv-rec ${recClass}">${esc(f.rec)}</span>`:''}</td>
       <td>${esc(f.category||'—')}</td>
       <td>
         <select class="lv-status" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
@@ -613,7 +597,6 @@ function renderListView(list,el){
         <th>Festival</th>
         <th>Deadline</th>
         <th>Fee</th>
-        <th>Decision</th>
         <th>Category</th>
         <th>Status</th>
         <th></th>
