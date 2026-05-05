@@ -182,6 +182,26 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
 .lv-rec{font-size:.66rem;font-weight:600;padding:2px 7px;border-radius:8px}
 .lv-actions{white-space:nowrap;display:inline-flex;gap:4px;align-items:center}
 .lv-status{padding:3px 6px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;font-size:.7rem;cursor:pointer;outline:none}
+
+/* Bookmarklet panel */
+.bookmarklet-row{margin-top:10px;padding:10px 12px;background:var(--surface);border:1px dashed var(--border2);border-radius:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:.74rem;color:var(--text2)}
+.bookmarklet-btn{background:var(--accent);color:#0f1115;padding:6px 14px;border-radius:6px;font-weight:600;font-size:.78rem;text-decoration:none;cursor:grab;display:inline-flex;align-items:center;gap:5px;border:none}
+.bookmarklet-btn:hover{background:var(--accent-bright)}
+.bookmarklet-help{color:var(--accent);cursor:pointer;text-decoration:underline}
+.bookmarklet-help:hover{color:var(--accent-bright)}
+#bookmarkletInstructions{display:none;background:var(--surface2);border:1px solid var(--border);padding:12px 14px;border-radius:6px;margin-top:8px;font-size:.74rem;line-height:1.55}
+#bookmarkletInstructions.show{display:block}
+#bookmarkletInstructions ol{margin:6px 0 0 18px}
+#bookmarkletInstructions li{margin-bottom:4px}
+#bookmarkletInstructions code{background:var(--surface3);padding:1px 5px;border-radius:3px;font-size:.78rem}
+
+/* Ask Claude action */
+.ask-claude-btn{background:#1a1d24;border:1px solid var(--accent);color:var(--accent);padding:8px 14px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;margin-top:8px;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.ask-claude-btn:hover{background:var(--accent-dim)}
+.ask-claude-btn .check{display:none}
+.ask-claude-btn.copied{background:var(--accent);color:#0f1115}
+.ask-claude-btn.copied .copy-text{display:none}
+.ask-claude-btn.copied .check{display:inline}
 </style>
 </head>
 <body>
@@ -224,8 +244,28 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
       </div>
 
       <div class="bot-fallback">
-        <span>Need a deeper answer? This bot covers festivals we've already discussed. For new questions:</span>
+        <span>Tip: paste any FilmFreeway URL in the box above. Bot will extract the festival name and check if we have research on it.</span>
         <a href="https://claude.ai" target="_blank" rel="noopener">Open Claude →</a>
+      </div>
+
+      <div class="bookmarklet-row">
+        <span>🔖 <strong>Quick Vet bookmarklet:</strong> drag this button to your bookmarks bar. Click it on ANY FilmFreeway page to instantly check it here.</span>
+        <a class="bookmarklet-btn" id="bookmarkletBtn" href="#" onclick="return false">📌 Vet on Festival Tracker</a>
+        <span class="bookmarklet-help" onclick="document.getElementById('bookmarkletInstructions').classList.toggle('show')">How to use →</span>
+      </div>
+      <div id="bookmarkletInstructions">
+        <strong>One-time setup (30 seconds):</strong>
+        <ol>
+          <li>Make sure your bookmarks bar is visible (Chrome/Safari: <code>Cmd+Shift+B</code>)</li>
+          <li><strong>Drag</strong> the green <strong>"📌 Vet on Festival Tracker"</strong> button above to your bookmarks bar</li>
+          <li>Done!</li>
+        </ol>
+        <strong>How to use:</strong>
+        <ol>
+          <li>Visit any festival page on FilmFreeway, Festhome, etc.</li>
+          <li>Click the bookmarklet in your bookmarks bar</li>
+          <li>This page opens with the festival URL pre-filled in the bot — instant analysis</li>
+        </ol>
       </div>
     </div>
   </div>
@@ -359,18 +399,85 @@ const KB = {
 };
 
 // Festival assistant logic
+function isUrl(s){return /^https?:\/\//.test(s.trim())||/^www\./.test(s.trim())}
+
+function extractFestivalNameFromUrl(url){
+  try{
+    const u=new URL(url.startsWith('http')?url:'https://'+url);
+    // FilmFreeway: /FestivalName or /festival-name
+    let path=u.pathname.replace(/^\/+/,'').replace(/\/.*$/,'');
+    if(!path) return '';
+    // Remove tracking params
+    path=path.split('?')[0];
+    // Decode camelCase or hyphen-case to readable
+    let name=path.replace(/-/g,' ').replace(/([A-Z])/g,' $1').trim();
+    // Collapse multiple spaces
+    name=name.replace(/\s+/g,' ');
+    return name;
+  }catch(e){return ''}
+}
+
 function findKBMatch(query){
-  const q=query.toLowerCase().trim();
+  let q=query.toLowerCase().trim();
+  // If it's a URL, extract festival name from it
+  if(isUrl(q)){
+    const name=extractFestivalNameFromUrl(q);
+    if(name) q=q+' '+name.toLowerCase();
+  }
   // Exact festival match
   for(const[k,v] of Object.entries(KB.festivals)){
-    if(q.includes(k)) return v.content;
+    if(q.includes(k)) return {content:v.content,matched:k};
   }
   // Topic match
   for(const t of KB.topics){
-    if(t.keys.some(k=>q.includes(k))) return t.content;
+    if(t.keys.some(k=>q.includes(k))) return {content:t.content,matched:'topic'};
   }
   return null;
 }
+
+function buildClaudePrompt(query){
+  const isUrlQuery=isUrl(query);
+  const name=isUrlQuery?extractFestivalNameFromUrl(query):query;
+  if(isUrlQuery){
+    return `I'm evaluating this film festival for my documentary "Against All Odds" — a doc about software founders from non-metro Indian districts (funded by Shifu Foundation).
+
+Festival URL: ${query}
+Likely name: ${name}
+
+Please assess:
+1. Is this festival legitimate or vanity-leaning? Apply the standard vetting checklist (named jury, edition history, press coverage, fee structure, escalating deadlines, acceptance rate, named venue).
+2. What tier is it (S/A/B/C/D)?
+3. Is it Oscar-qualifying?
+4. Premiere requirements?
+5. Fit for a feature-length doc about Indian entrepreneurship/social change?
+6. Recommendation: Apply, Strategic, or Skip — and why.
+
+Be honest and direct. Compare to festivals like IDFA, Hot Docs, Sundance for context.`;
+  }
+  return `I'm asking about film festivals for my documentary "Against All Odds" (about software founders from non-metro Indian districts, funded by Shifu Foundation).
+
+My question: ${query}
+
+Please give me a direct, honest answer with practical strategic advice.`;
+}
+
+function copyToClipboard(text){
+  return navigator.clipboard.writeText(text).catch(()=>{
+    const t=document.createElement('textarea');
+    t.value=text;document.body.appendChild(t);t.select();
+    document.execCommand('copy');document.body.removeChild(t);
+  });
+}
+
+window.askClaudeWith=function(btn,prompt){
+  copyToClipboard(prompt).then(()=>{
+    btn.classList.add('copied');
+    setTimeout(()=>{
+      window.open('https://claude.ai/new','_blank','noopener');
+    },300);
+    setTimeout(()=>btn.classList.remove('copied'),3000);
+  });
+};
 
 function appendMsg(role,content){
   const conv=document.getElementById('botConv');
@@ -387,15 +494,34 @@ function askBot(qOverride){
   const input=document.getElementById('botInput');
   const q=qOverride||input.value.trim();
   if(!q) return;
-  appendMsg('user',escapeHtml(q));
+  const displayQ=isUrl(q)?`📎 ${q.length>60?q.slice(0,60)+'…':q}`:q;
+  appendMsg('user',escapeHtml(displayQ));
   input.value='';
   const thinking=appendMsg('bot','<span class="bot-thinking">Searching</span>');
+
   setTimeout(()=>{
-    const answer=findKBMatch(q);
-    if(answer){
-      thinking.querySelector('.bubble').innerHTML=answer;
+    const result=findKBMatch(q);
+    if(result){
+      let prefix='';
+      if(isUrl(q)){
+        const name=extractFestivalNameFromUrl(q);
+        prefix=`<div style="font-size:.72rem;color:var(--text3);margin-bottom:8px">🔍 Detected festival: <strong style="color:var(--accent)">${escapeHtml(name)}</strong> — found in our research:</div>`;
+      }
+      thinking.querySelector('.bubble').innerHTML=prefix+result.content;
     } else {
-      thinking.querySelector('.bubble').innerHTML=`<strong>I don't have that one in my knowledge base yet.</strong><br><br>I'm loaded with the festivals and topics we've discussed: IDFA, MAMI, Sundance, CPH:DOX, Ji.hlava, Sitges, Naples, ARKIPEL, SASFF, KSIFF, India Movie Awards, vanity-spotting, premiere strategy, Oscar-qualifying lists, MAMI submission, fees, and more.<br><br>For new festivals or deeper questions: <a href="https://claude.ai" target="_blank" rel="noopener">Ask Claude →</a>`;
+      const claudePrompt=buildClaudePrompt(q);
+      const escaped=claudePrompt.replace(/`/g,'\\`').replace(/\$/g,'\\$').replace(/'/g,"\\'");
+      const promptForBtn=claudePrompt.replace(/[`$]/g,m=>'\\'+m).replace(/'/g,"\\'");
+
+      let intro;
+      if(isUrl(q)){
+        const name=extractFestivalNameFromUrl(q);
+        intro=`<strong>I don't have research on this festival yet.</strong><br><br>🔍 Detected: <strong style="color:var(--accent)">${escapeHtml(name||'Unknown festival')}</strong><br><br>I've prepared a structured analysis prompt for Claude. Click below — it copies the prompt to your clipboard and opens Claude. Just paste (Cmd+V) and hit enter.`;
+      } else {
+        intro=`<strong>I don't have a direct match in my knowledge base.</strong><br><br>I cover the festivals and topics we've discussed: IDFA, MAMI, Sundance, CPH:DOX, Ji.hlava, Sitges, Naples, ARKIPEL, SASFF, KSIFF, India Movie Awards, vanity-spotting, premiere strategy, Oscar-qualifying lists, MAMI submission, fees, etc.<br><br>I've prepared your question as a structured prompt for Claude. Click below — it copies the prompt and opens Claude. Just paste and ask.`;
+      }
+
+      thinking.querySelector('.bubble').innerHTML=`${intro}<br><button class="ask-claude-btn" data-prompt="${escapeHtml(claudePrompt)}" onclick="askClaudeWith(this,this.dataset.prompt)"><span class="copy-text">📋 Copy prompt & open Claude</span><span class="check">✓ Copied! Opening Claude...</span></button>`;
     }
   },350);
 }
@@ -637,6 +763,27 @@ if(currentView==='list'){
   document.getElementById('viewCard').classList.remove('active');
   document.getElementById('viewList').classList.add('active');
 }
+
+// Build the bookmarklet href dynamically (uses current page URL as target)
+(function(){
+  const trackerUrl=window.location.href.split('?')[0];
+  const bookmarkletCode=`javascript:(function(){var u=window.location.href;window.open('${trackerUrl}?vet='+encodeURIComponent(u),'_blank');})();`;
+  const btn=document.getElementById('bookmarkletBtn');
+  if(btn) btn.setAttribute('href',bookmarkletCode);
+})();
+
+// If launched with ?vet=URL param, auto-ask the bot
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const vetUrl=params.get('vet');
+  if(vetUrl){
+    document.getElementById('bot').classList.add('open');
+    setTimeout(()=>{
+      askBot(vetUrl);
+      document.getElementById('bot').scrollIntoView({behavior:'smooth',block:'start'});
+    },200);
+  }
+})();
 
 renderSummary();
 render();
