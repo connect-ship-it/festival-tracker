@@ -123,6 +123,14 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
 .rec-strategic{background:rgba(156,163,175,.15);color:var(--text2)}
 
 .fest-notes{font-size:.72rem;color:var(--text2);font-style:italic;line-height:1.4;padding:6px 8px;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border2)}
+.fest-comments{font-size:.72rem;color:var(--text);line-height:1.4;padding:7px 10px;background:rgba(127,198,122,.06);border-radius:5px;border-left:2px solid var(--accent);display:flex;gap:6px;align-items:flex-start}
+.fest-comments .comments-icon{flex-shrink:0;font-size:.85rem;line-height:1.3}
+.fest-comments .comments-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:700;margin-bottom:2px;display:block}
+.fest-comments .comments-text{color:var(--text)}
+.lv-comments-icon{display:inline-block;font-size:.85rem;cursor:help;margin-left:4px;color:var(--accent);position:relative}
+.lv-comments-icon:hover .lv-comments-pop{display:block}
+.lv-comments-pop{display:none;position:absolute;top:100%;left:0;z-index:50;background:var(--surface3);border:1px solid var(--accent);padding:8px 12px;border-radius:6px;font-size:.72rem;line-height:1.45;width:280px;color:var(--text);font-style:normal;box-shadow:0 4px 14px rgba(0,0,0,.5);font-weight:400}
+.lv-comments-pop strong{color:var(--accent);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
 
 .fest-actions{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
 .status-select{padding:4px 8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:.72rem;cursor:pointer;outline:none}
@@ -303,13 +311,13 @@ const FESTIVALS = [
 
   // TIER S — DREAM FESTIVALS, PRIORITY APPLY
   {name:"IDFA — International Documentary Film Festival Amsterdam",deadline:"2026-05-14",fee:48,category:"Best Documentary",notes:"World's #1 doc fest. Late deadline — preserve World Premiere status. Aim Luminous section.",link:"https://www.idfa.nl/",status:"Not started",tier:"S",rec:"Priority"},
-  {name:"CPH:DOX — Copenhagen Intl Documentary Film Festival",deadline:"2026-05-15",fee:null,category:"TBC",notes:"NOT on FilmFreeway — submit directly via cphdox.dk/rules-and-regulations/. Fee TBC. One of Europe's most prestigious doc fests.",link:"https://cphdox.dk/rules-and-regulations/",status:"Not started",tier:"S",rec:"Priority"},
-  {name:"TIFF — Toronto International Film Festival",deadline:"2026-05-08",fee:64.49,category:"Short Cuts (need <40 min cut)",notes:"⚠️ Need a SHORTER VERSION (<40 min). Oscar-qualifying for shorts. Coordinate with @Ritesh for short cut.",link:"https://tiff.net/submissions",status:"Not started",tier:"S",rec:"Priority"},
+  {name:"CPH:DOX — Copenhagen Intl Documentary Film Festival",deadline:"2026-05-15",fee:null,category:"TBC",notes:"NOT on FilmFreeway — submit directly via cphdox.dk/rules-and-regulations/. Fee TBC. One of Europe's most prestigious doc fests.",comments:"Not on FilmFreeway. Check the website: cphdox.dk/rules-and-regulations/",link:"https://cphdox.dk/rules-and-regulations/",status:"Not started",tier:"S",rec:"Priority"},
+  {name:"TIFF — Toronto International Film Festival",deadline:"2026-05-08",fee:64.49,category:"Short Cuts (need <40 min cut)",notes:"⚠️ Need a SHORTER VERSION (<40 min). Oscar-qualifying for shorts. Coordinate with @Ritesh for short cut.",comments:"Need a SHORTER VERSION for this one. Need an UNDER 40 MIN cut — cc @Ritesh Varma",link:"https://tiff.net/submissions",status:"Not started",tier:"S",rec:"Priority"},
   {name:"IDSFFK — Int'l Documentary & Short Film Festival of Kerala",deadline:"2026-05-10",fee:10,category:"Documentary",notes:"Kerala govt-backed dedicated doc fest. Strong fit. Low fee. CBFC certificate or signed affidavit needed.",link:"https://vp.eventival.com/idsffk/idsffk2026/film-form/film-submission",status:"Not started",tier:"A",rec:"Priority"},
 
   // TIER A & B — STRONG APPLY (legitimate, doc-friendly)
   {name:"Hot Springs Documentary Film Festival",deadline:"2026-06-20",fee:65,category:"Best Documentary",notes:"Oscar-qualifying. America's oldest doc fest. June deadline but listed for May planning.",link:"https://hsdff.org/",status:"Not started",tier:"A",rec:"Apply"},
-  {name:"Newport Beach Film Festival",deadline:"2026-05-29",fee:85,category:"Feature Documentary",notes:"Include 1 screenshot (4×5″, min 300dpi) — no posters/text/collages. Solid US regional festival.",link:"https://newportbeachfilmfest.com/",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"Newport Beach Film Festival",deadline:"2026-05-29",fee:85,category:"Feature Documentary",notes:"Include 1 screenshot (4×5″, min 300dpi) — no posters/text/collages. Solid US regional festival.",comments:"Please include one screenshot (4×5″) of high quality (min 300dpi) with your submission. No posters, text on image or collages please.",link:"https://newportbeachfilmfest.com/",status:"Not started",tier:"B",rec:"Apply"},
   {name:"New Orleans Film Festival",deadline:"2026-05-29",fee:76,category:"Documentary Feature",notes:"Oscar-qualifying for shorts. Solid US regional reputation. Strong audience.",link:"https://neworleansfilmsociety.org/",status:"Not started",tier:"A",rec:"Apply"},
   {name:"Santa Fe International Film Festival",deadline:"2026-05-06",fee:58.50,category:"International Feature",notes:"⚡ DEADLINE TOMORROW. Tier B+ regional US. Oscar-qualifying for shorts only (not features). 'Young Sundance' branding.",link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",status:"Not started",tier:"B",rec:"Apply"},
   {name:"World Film Festival Kolkata (FFSI)",deadline:"2026-05-31",fee:40,category:"Documentary",notes:"Run by FFSI (Federation of Film Societies of India). Same lineage as SASFF. Real curatorial credibility.",link:"https://ffsi.org.in/world-film-festival-kolkata/",status:"Not started",tier:"B",rec:"Apply"},
@@ -321,7 +329,7 @@ const FESTIVALS = [
   {name:"Venice Shorts",deadline:"2026-05-26",fee:44,category:"Documentary Short Film",notes:"⚠️ Different from Venice Film Week. Yet another 'Venice'-branded mid-tier fest. Vet before paying.",link:"https://www.veniceshorts.com/",status:"Not started",tier:"C",rec:"Strategic"},
 
   // TIER C — COMMERCIAL (Miniboxoffice & similar). Apply if budget surplus only
-  {name:"KSIFF-26 (15th Kolkata Shorts Intl Film Festival)",deadline:"2026-05-08",fee:41.02,category:"Production Awards: Short Films, Animations, Documentaries, Music Videos",notes:"Miniboxoffice operation. Production + Creative Awards available. Real screenings at Logan-style venue. Commercial tier.",link:"https://filmfreeway.com/kolkatashortsinternationalfilmfestival",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"KSIFF-26 (15th Kolkata Shorts Intl Film Festival)",deadline:"2026-05-08",fee:41.02,category:"Production Awards: Short Films, Animations, Documentaries, Music Videos",notes:"Miniboxoffice operation. Production + Creative Awards available. Real screenings at Logan-style venue. Commercial tier.",comments:"Have CREATIVE AWARDS as well.",link:"https://filmfreeway.com/kolkatashortsinternationalfilmfestival",status:"Not started",tier:"C",rec:"Strategic"},
   {name:"MSIFF — 15th Mumbai International Short Film Festival",deadline:"2026-05-14",fee:42.22,category:"Best Short Documentary",notes:"Miniboxoffice operation. Commercial tier. Useful only for laurel volume.",link:"https://filmfreeway.com/mumbaishortsinternationalfilmfestival",status:"Not started",tier:"C",rec:"Strategic"},
 
   // TIER D — SKIP (vanity / weak fit)
@@ -330,7 +338,7 @@ const FESTIVALS = [
   {name:"India Cine Film Festival (ICFF) — Miniboxoffice",deadline:"2026-05-17",fee:79,category:"Short Documentary",notes:"Miniboxoffice. Highest commercial fee with no real prestige. Skip.",link:"https://filmfreeway.com/IndianCineFilmFestival",status:"Not started",tier:"D",rec:"Skip"},
   {name:"ICFF — Indian Cine Film Festival",deadline:"2026-05-17",fee:73.62,category:"Short Documentary",notes:"Same as above (or duplicate listing). Skip.",link:"https://filmfreeway.com/IndianCineFilmFestival",status:"Not started",tier:"D",rec:"Skip"},
   {name:"15th Delhi Shorts International Film Festival 2026",deadline:"2026-05-09",fee:6,category:"Short",notes:"Miniboxoffice. Low fee but no prestige. Maybe skip — but at $6, could be a 'cheap laurel' play.",link:"https://filmfreeway.com/delhi-shorts-international-film-festival",status:"Not started",tier:"D",rec:"Skip"},
-  {name:"India Movie Awards",deadline:"2026-05-06",fee:15,category:"Documentary (any length)",notes:"⚠️ VANITY AWARD. 1st edition. No edition history, no jury, mimics Filmfare. Hard skip.",link:"https://filmfreeway.com/INDIANMOVIEAWARDS",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"India Movie Awards",deadline:"2026-05-06",fee:15,category:"Documentary (any length)",notes:"⚠️ VANITY AWARD. 1st edition. No edition history, no jury, mimics Filmfare. Hard skip.",comments:"This is 1st Edition of the festival. Multiple Award Categories available.",link:"https://filmfreeway.com/INDIANMOVIEAWARDS",status:"Not started",tier:"D",rec:"Skip"},
   {name:"The London Indian Film Festival (LIFF)",deadline:"2026-05-24",fee:0,category:"NOT ELIGIBLE — 30 min runtime cap",notes:"❌ NOT ELIGIBLE. Runtime cap is 30 min. Feature-length doc doesn't qualify.",link:"https://londonindianfilmfestival.co.uk/",status:"Not started",tier:"D",rec:"Skip"},
 
   // SHORT DOC, FilmFreeway promoted email
@@ -664,6 +672,7 @@ function renderCardView(list,el){
         <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b></span>
         ${f.category?`<span class="fest-cat">${esc(f.category)}</span>`:''}
       </div>
+      ${f.comments?`<div class="fest-comments"><span class="comments-icon">💬</span><div><span class="comments-label">Team comment</span><span class="comments-text">${esc(f.comments)}</span></div></div>`:''}
       ${f.notes?`<div class="fest-notes">${esc(f.notes)}</div>`:''}
       <div class="fest-actions">
         <select class="status-select" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
@@ -693,9 +702,10 @@ function renderListView(list,el){
     const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
     const dlSuffix=days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'1d':days+'d'})`:days!==null&&days<0?' (passed)':'';
 
+    const commentBadge=f.comments?`<span class="lv-comments-icon" title="${esc(f.comments)}">💬<span class="lv-comments-pop"><strong>Team comment</strong>${esc(f.comments)}</span></span>`:'';
     return `<tr class="${submitted?'submitted-row':''}">
       <td><span class="lv-tier tier-${f.tier}">${f.tier||'?'}</span></td>
-      <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}</td>
+      <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}${commentBadge}</td>
       <td class="lv-deadline ${dlClass}">${fmtDate(f.deadline)}${dlSuffix}</td>
       <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}</td>
       <td>${esc(f.category||'—')}</td>
