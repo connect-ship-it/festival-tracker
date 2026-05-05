@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>May 2026 — Submissions Tracker | Against All Odds</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1115;--surface:#1a1d24;--surface2:#22262f;--surface3:#2d323c;
+  --border:#2d323c;--border2:#3d434f;
+  --text:#e8eaed;--text2:#9aa0ac;--text3:#6b7280;
+  --accent:#7fc67a;--accent-dim:#1f3320;--accent-bright:#9ad695;
+  --apply:#86efac;--skip:#f87171;--strategic:#fbbf24;
+  --tier-s:#c084fc;--tier-a:#86efac;--tier-b:#fbbf24;--tier-c:#9ca3af;--tier-d:#f87171;
+  --radius:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.app{max-width:1300px;margin:0 auto;padding:18px 24px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap;gap:12px}
+h1{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
+.nav-links{display:flex;gap:8px}
+.top-link{color:var(--text2);font-size:.75rem;text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:6px}
+.top-link:hover{color:var(--text);border-color:var(--border2);background:var(--surface)}
+
+/* Chatbot */
+.bot{background:linear-gradient(135deg,#1f3320 0%,#22262f 100%);border:1px solid var(--accent);border-radius:14px;margin-bottom:20px;overflow:hidden;box-shadow:0 4px 20px rgba(127,198,122,.08)}
+.bot-header{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.bot-title{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.95rem}
+.bot-icon{width:32px;height:32px;background:var(--accent);color:#0f1115;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700}
+.bot-title .pulse{display:inline-block;width:8px;height:8px;background:var(--accent-bright);border-radius:50%;margin-left:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.bot-toggle{color:var(--text2);font-size:.78rem}
+.bot-body{padding:0 20px 18px;display:none}
+.bot.open .bot-body{display:block}
+.bot.open .bot-toggle{transform:rotate(180deg)}
+.bot-toggle{transition:transform .2s}
+
+.bot-suggest{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.bot-chip{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:14px;font-size:.72rem;cursor:pointer;transition:all .15s}
+.bot-chip:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+
+.bot-input-row{display:flex;gap:8px;margin-bottom:12px}
+.bot-input{flex:1;padding:10px 14px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:8px;font-size:.85rem;outline:none}
+.bot-input:focus{border-color:var(--accent)}
+.bot-send{background:var(--accent);color:#0f1115;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.82rem}
+.bot-send:hover{background:var(--accent-bright)}
+
+.bot-conversation{max-height:420px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;display:none}
+.bot-conversation.show{display:block}
+.bot-msg{margin-bottom:14px;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.bot-msg-user{text-align:right}
+.bot-msg-user .bubble{background:var(--accent);color:#0f1115;display:inline-block;padding:8px 14px;border-radius:14px 14px 0 14px;font-size:.82rem;max-width:80%;font-weight:500}
+.bot-msg-bot .bubble{background:var(--surface2);border:1px solid var(--border);padding:12px 16px;border-radius:14px 14px 14px 0;font-size:.82rem;line-height:1.55}
+.bot-msg-bot .bubble strong{color:var(--accent);font-weight:600}
+.bot-msg-bot .bubble code{background:var(--surface3);padding:1px 6px;border-radius:3px;font-size:.78rem}
+.bot-msg-bot .bubble ul{margin:6px 0 6px 18px}
+.bot-msg-bot .bubble li{margin-bottom:3px}
+.bot-msg-bot .bubble h4{margin-top:8px;margin-bottom:4px;font-size:.85rem;color:var(--accent)}
+.bot-msg-bot .bubble a{color:var(--accent-bright)}
+.bot-thinking{display:inline-block;color:var(--text3);font-style:italic;font-size:.78rem}
+.bot-thinking::after{content:'';animation:dots 1.4s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+
+.bot-fallback{background:var(--surface);border:1px dashed var(--border2);padding:10px 14px;border-radius:8px;font-size:.75rem;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.bot-fallback a{color:var(--accent);text-decoration:none;font-weight:600}
+.bot-fallback a:hover{text-decoration:underline}
+
+/* Summary strip */
+.summary{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;margin-bottom:14px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.summary span{color:var(--text2)}
+.summary span b{color:var(--accent);font-weight:700;margin-right:4px;font-size:.9rem}
+.summary .urgent b{color:var(--skip)}
+
+/* Filters */
+.controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search{flex:0 1 200px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.78rem;outline:none}
+.search:focus{border-color:var(--accent)}
+.chip{padding:4px 11px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:.7rem;font-weight:500;white-space:nowrap}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--accent);color:#0f1115;border-color:var(--accent);font-weight:600}
+
+/* Cards */
+.fests{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px}
+.fest-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:all .15s;display:flex;flex-direction:column;gap:8px;border-left:3px solid var(--border)}
+.fest-card:hover{border-color:var(--border2)}
+.fest-card.tier-S{border-left-color:var(--tier-s)}
+.fest-card.tier-A{border-left-color:var(--tier-a)}
+.fest-card.tier-B{border-left-color:var(--tier-b)}
+.fest-card.tier-C{border-left-color:var(--tier-c)}
+.fest-card.tier-D{border-left-color:var(--tier-d)}
+.fest-card.submitted{opacity:.6;background:var(--surface2)}
+.fest-card.submitted .fest-name{text-decoration:line-through}
+
+.fest-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.fest-name{font-size:.95rem;font-weight:600;line-height:1.3;flex:1;min-width:0}
+.fest-name a{color:inherit;text-decoration:none}
+.fest-name a:hover{color:var(--accent)}
+
+.tier-pill{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;white-space:nowrap}
+.tier-pill.tier-S{background:rgba(192,132,252,.15);color:var(--tier-s)}
+.tier-pill.tier-A{background:rgba(134,239,172,.15);color:var(--tier-a)}
+.tier-pill.tier-B{background:rgba(251,191,36,.15);color:var(--tier-b)}
+.tier-pill.tier-C{background:rgba(156,163,175,.15);color:var(--tier-c)}
+.tier-pill.tier-D{background:rgba(248,113,113,.15);color:var(--tier-d)}
+
+.fest-meta{display:flex;gap:14px;font-size:.74rem;color:var(--text2);flex-wrap:wrap;align-items:center}
+.fest-meta b{color:var(--text);font-weight:600}
+.fest-meta .deadline-near b{color:var(--skip)}
+.fest-meta .deadline-soon b{color:var(--strategic)}
+.fest-meta .free b{color:var(--accent)}
+
+.fest-cat{font-size:.72rem;color:var(--text2);background:var(--surface2);padding:3px 8px;border-radius:4px;display:inline-block}
+
+.fest-rec{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:8px;display:inline-block}
+.rec-priority{background:rgba(134,239,172,.12);color:var(--apply)}
+.rec-apply{background:rgba(251,191,36,.12);color:var(--strategic)}
+.rec-skip{background:rgba(248,113,113,.12);color:var(--skip)}
+.rec-strategic{background:rgba(156,163,175,.15);color:var(--text2)}
+
+.fest-notes{font-size:.72rem;color:var(--text2);font-style:italic;line-height:1.4;padding:6px 8px;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border2)}
+
+.fest-actions{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.status-select{padding:4px 8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:.72rem;cursor:pointer;outline:none}
+.apply-btn{background:var(--accent);color:#0f1115;padding:5px 12px;border-radius:5px;text-decoration:none;font-size:.72rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;margin-left:auto}
+.apply-btn:hover{background:var(--accent-bright)}
+.apply-btn.disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed}
+.copy-btn{background:transparent;color:var(--text3);padding:4px 7px;border-radius:4px;border:1px solid var(--border2);font-size:.66rem;cursor:pointer}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+.copy-btn.done{background:var(--accent);color:#0f1115;border-color:var(--accent)}
+
+.empty{text-align:center;padding:40px;color:var(--text2)}
+@media(max-width:700px){.fests{grid-template-columns:1fr}.app{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>May 2026 Tracker<span class="sub">Against All Odds &bull; Submissions this month</span></h1>
+    <div class="nav-links">
+      <a href="v2.html" class="top-link">National v2</a>
+      <a href="index.html" class="top-link">Full tracker (v1)</a>
+    </div>
+  </header>
+
+  <!-- Festival Assistant Bot -->
+  <div class="bot open" id="bot">
+    <div class="bot-header" onclick="document.getElementById('bot').classList.toggle('open')">
+      <div class="bot-title">
+        <div class="bot-icon">F</div>
+        <span>Festival Assistant<span class="pulse"></span></span>
+        <span style="color:var(--text3);font-size:.72rem;font-weight:400">— ask anything about festivals</span>
+      </div>
+      <span class="bot-toggle">▼</span>
+    </div>
+    <div class="bot-body">
+      <div class="bot-suggest">
+        <span class="bot-chip" data-q="Is India Movie Awards a real festival?">Is India Movie Awards real?</span>
+        <span class="bot-chip" data-q="What is World Premiere status and why does it matter?">What is World Premiere?</span>
+        <span class="bot-chip" data-q="How do I submit to MAMI?">How to submit to MAMI?</span>
+        <span class="bot-chip" data-q="What are the top 10 dream festivals?">Top 10 dream festivals</span>
+        <span class="bot-chip" data-q="How to spot a vanity festival?">Spot vanity festivals</span>
+        <span class="bot-chip" data-q="Tell me about IDFA">About IDFA</span>
+        <span class="bot-chip" data-q="What is Ji.hlava and rough cut submission?">Ji.hlava rough cut</span>
+        <span class="bot-chip" data-q="What festivals are Oscar qualifying?">Oscar-qualifying fests</span>
+      </div>
+
+      <div class="bot-conversation" id="botConv"></div>
+
+      <div class="bot-input-row">
+        <input class="bot-input" id="botInput" placeholder="Ask about a festival, premiere strategy, fees..." onkeydown="if(event.key==='Enter')askBot()">
+        <button class="bot-send" onclick="askBot()">Ask</button>
+      </div>
+
+      <div class="bot-fallback">
+        <span>Need a deeper answer? This bot covers festivals we've already discussed. For new questions:</span>
+        <a href="https://claude.ai" target="_blank" rel="noopener">Open Claude →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary" id="summary"></div>
+
+  <!-- Filters -->
+  <div class="controls">
+    <input class="search" id="searchInput" placeholder="Search festival...">
+    <div class="chip active" data-filter="all">All</div>
+    <div class="chip" data-filter="priority">Priority Apply</div>
+    <div class="chip" data-filter="apply">Apply</div>
+    <div class="chip" data-filter="strategic">Consider</div>
+    <div class="chip" data-filter="skip">Skip</div>
+    <div class="chip" data-filter="submitted">Submitted</div>
+    <div class="chip" data-filter="urgent">⚡ Urgent (≤7d)</div>
+  </div>
+
+  <div class="fests" id="festsList"></div>
+</div>
+
+<script>
+// ============= MAY 2026 FESTIVAL DATA =============
+const FESTIVALS = [
+  // ALREADY SUBMITTED
+  {name:"ARKIPEL — Jakarta Intl Documentary & Experimental Film Festival",deadline:null,fee:19,category:"Documentary / Experimental",notes:"Already submitted ✓",link:"https://filmfreeway.com/ARKIPEL",status:"Submitted",tier:"B",rec:"Strategic"},
+  {name:"South Asian Short Film Festival (SASFF)",deadline:null,fee:26,category:"Short Documentary",notes:"Already submitted ✓ — FFSI East, Ray/Ghatak/Sen-named awards",link:"https://filmfreeway.com/sasff",status:"Submitted",tier:"B",rec:"Apply"},
+
+  // TIER S — DREAM FESTIVALS, PRIORITY APPLY
+  {name:"IDFA — International Documentary Film Festival Amsterdam",deadline:"2026-05-14",fee:48,category:"Best Documentary",notes:"World's #1 doc fest. Late deadline — preserve World Premiere status. Aim Luminous section.",link:"https://www.idfa.nl/",status:"Not started",tier:"S",rec:"Priority"},
+  {name:"CPH:DOX — Copenhagen Intl Documentary Film Festival",deadline:"2026-05-15",fee:null,category:"TBC",notes:"NOT on FilmFreeway — submit directly via cphdox.dk/rules-and-regulations/. Fee TBC. One of Europe's most prestigious doc fests.",link:"https://cphdox.dk/rules-and-regulations/",status:"Not started",tier:"S",rec:"Priority"},
+  {name:"TIFF — Toronto International Film Festival",deadline:"2026-05-08",fee:64.49,category:"Short Cuts (need <40 min cut)",notes:"⚠️ Need a SHORTER VERSION (<40 min). Oscar-qualifying for shorts. Coordinate with @Ritesh for short cut.",link:"https://tiff.net/submissions",status:"Not started",tier:"S",rec:"Priority"},
+  {name:"IDSFFK — Int'l Documentary & Short Film Festival of Kerala",deadline:"2026-05-10",fee:10,category:"Documentary",notes:"Kerala govt-backed dedicated doc fest. Strong fit. Low fee. CBFC certificate or signed affidavit needed.",link:"https://vp.eventival.com/idsffk/idsffk2026/film-form/film-submission",status:"Not started",tier:"A",rec:"Priority"},
+
+  // TIER A & B — STRONG APPLY (legitimate, doc-friendly)
+  {name:"Hot Springs Documentary Film Festival",deadline:"2026-06-20",fee:65,category:"Best Documentary",notes:"Oscar-qualifying. America's oldest doc fest. June deadline but listed for May planning.",link:"https://hsdff.org/",status:"Not started",tier:"A",rec:"Apply"},
+  {name:"Newport Beach Film Festival",deadline:"2026-05-29",fee:85,category:"Feature Documentary",notes:"Include 1 screenshot (4×5″, min 300dpi) — no posters/text/collages. Solid US regional festival.",link:"https://newportbeachfilmfest.com/",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"New Orleans Film Festival",deadline:"2026-05-29",fee:76,category:"Documentary Feature",notes:"Oscar-qualifying for shorts. Solid US regional reputation. Strong audience.",link:"https://neworleansfilmsociety.org/",status:"Not started",tier:"A",rec:"Apply"},
+  {name:"Santa Fe International Film Festival",deadline:"2026-05-06",fee:58.50,category:"International Feature",notes:"⚡ DEADLINE TOMORROW. Tier B+ regional US. Oscar-qualifying for shorts only (not features). 'Young Sundance' branding.",link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"World Film Festival Kolkata (FFSI)",deadline:"2026-05-31",fee:40,category:"Documentary",notes:"Run by FFSI (Federation of Film Societies of India). Same lineage as SASFF. Real curatorial credibility.",link:"https://ffsi.org.in/world-film-festival-kolkata/",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"MSDFF — Mumbai Short & Documentary Film Festival",deadline:"2026-05-05",fee:5.40,category:"Documentary Feature / Indian Documentary",notes:"⚡ DEADLINE TODAY. Excellent low-fee Indian doc fest. Social-justice section fits theme.",link:"https://filmfreeway.com/msdffest",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"MUMBA International Film Festival",deadline:"2026-05-31",fee:43,category:"Feature Doc",notes:"Mid-tier Indian fest. Verify legitimacy before paying — check for edition history.",link:"https://mumbafilmfestival.com/",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"Impact Docs Awards",deadline:"2026-05-29",fee:35,category:"Documentary Feature",notes:"⚠️ Award-mill structure — judges films online, gives laurels. Not a festival in traditional sense. Useful only for laurel padding.",link:"https://impactdocsawards.com/",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"Berlin Short Film Festival",deadline:"2026-05-12",fee:54,category:"Short Documentary",notes:"Mid-tier European short fest. Verify if it's the legit Interfilm Berlin or a separate 'Berlin'-branded fest.",link:"https://www.berlinshortfilmfestival.com/",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"The Venice Film Week",deadline:"2026-05-26",fee:45,category:"Documentary Short Film",notes:"⚠️ Not affiliated with Venice Biennale (the prestigious one). Mid-tier European fest with confusable name.",link:"https://www.venicefilmweek.com/",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"Venice Shorts",deadline:"2026-05-26",fee:44,category:"Documentary Short Film",notes:"⚠️ Different from Venice Film Week. Yet another 'Venice'-branded mid-tier fest. Vet before paying.",link:"https://www.veniceshorts.com/",status:"Not started",tier:"C",rec:"Strategic"},
+
+  // TIER C — COMMERCIAL (Miniboxoffice & similar). Apply if budget surplus only
+  {name:"KSIFF-26 (15th Kolkata Shorts Intl Film Festival)",deadline:"2026-05-08",fee:41.02,category:"Production Awards: Short Films, Animations, Documentaries, Music Videos",notes:"Miniboxoffice operation. Production + Creative Awards available. Real screenings at Logan-style venue. Commercial tier.",link:"https://filmfreeway.com/kolkatashortsinternationalfilmfestival",status:"Not started",tier:"C",rec:"Strategic"},
+  {name:"MSIFF — 15th Mumbai International Short Film Festival",deadline:"2026-05-14",fee:42.22,category:"Best Short Documentary",notes:"Miniboxoffice operation. Commercial tier. Useful only for laurel volume.",link:"https://filmfreeway.com/mumbaishortsinternationalfilmfestival",status:"Not started",tier:"C",rec:"Strategic"},
+
+  // TIER D — SKIP (vanity / weak fit)
+  {name:"IWFF — Indian World Film Festival",deadline:"2026-05-21",fee:40.60,category:"Best Short Documentary",notes:"Miniboxoffice. Borderline commercial. Skip recommended.",link:"https://filmfreeway.com/Indian-World-Film-Festival",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"The Noida International Film Festival (NIFF)",deadline:"2026-05-09",fee:40.60,category:"Best Short Documentary",notes:"Miniboxoffice. Commercial tier with 5+ rolling deadlines. Skip recommended.",link:"https://filmfreeway.com/NoidaInternationalFilmFestival",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"India Cine Film Festival (ICFF) — Miniboxoffice",deadline:"2026-05-17",fee:79,category:"Short Documentary",notes:"Miniboxoffice. Highest commercial fee with no real prestige. Skip.",link:"https://filmfreeway.com/IndianCineFilmFestival",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"ICFF — Indian Cine Film Festival",deadline:"2026-05-17",fee:73.62,category:"Short Documentary",notes:"Same as above (or duplicate listing). Skip.",link:"https://filmfreeway.com/IndianCineFilmFestival",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"15th Delhi Shorts International Film Festival 2026",deadline:"2026-05-09",fee:6,category:"Short",notes:"Miniboxoffice. Low fee but no prestige. Maybe skip — but at $6, could be a 'cheap laurel' play.",link:"https://filmfreeway.com/delhi-shorts-international-film-festival",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"India Movie Awards",deadline:"2026-05-06",fee:15,category:"Documentary (any length)",notes:"⚠️ VANITY AWARD. 1st edition. No edition history, no jury, mimics Filmfare. Hard skip.",link:"https://filmfreeway.com/INDIANMOVIEAWARDS",status:"Not started",tier:"D",rec:"Skip"},
+  {name:"The London Indian Film Festival (LIFF)",deadline:"2026-05-24",fee:0,category:"NOT ELIGIBLE — 30 min runtime cap",notes:"❌ NOT ELIGIBLE. Runtime cap is 30 min. Feature-length doc doesn't qualify.",link:"https://londonindianfilmfestival.co.uk/",status:"Not started",tier:"D",rec:"Skip"},
+
+  // SHORT DOC, FilmFreeway promoted email
+  {name:"Promoted via FilmFreeway email",deadline:"2026-05-25",fee:25.50,category:"Best Short Documentary",notes:"⚠️ FilmFreeway tracking link from email — needs identification. Check the actual festival name before paying.",link:"https://filmfreeway.com/",status:"Not started",tier:"C",rec:"Strategic"}
+];
+
+// ============= CHATBOT KNOWLEDGE BASE =============
+const KB = {
+  // Festival assessments (key: lowercase searchable name → response)
+  festivals: {
+    'idfa':{tier:'S',content:'<h4>IDFA — World #1 Doc Festival</h4><strong>Tier S.</strong> The most competitive and prestigious doc festival globally. Aim for the <strong>Luminous</strong> section (social-change docs) or <strong>First Appearance</strong> (debut features). Submission fee ~€45 late deadline. <strong>World Premiere strongly preferred</strong> — protect WP status by not screening anywhere publicly before applying. Festival runs late November. Decision typically late September.<br><br><strong>For "Against All Odds":</strong> Strong thematic fit with Luminous (entrepreneurship/social change). This is your primary international target.'},
+    'mami':{tier:'S',content:'<h4>MAMI — Mumbai Film Festival</h4><strong>Tier S (India).</strong> India\'s most industry-connected festival. <strong>Free for Indian films.</strong> Netflix, Mubi, Amazon scouts attend — best for OTT distribution deals. Submit via mumbaifilmfestival.com (NOT FilmFreeway). Window opens April-May, closes ~July 15. Section to target: <strong>India Gold Documentary Competition</strong>. Top prize: Golden Gateway.'},
+    'sundance':{tier:'S',content:'<h4>Sundance Film Festival</h4><strong>Tier S.</strong> Most prestigious US fest overall. ~1-2% acceptance rate. Submit by ~Sept 1, festival runs Jan 2027. <strong>World Premiere required for main competition.</strong> For your doc, target <strong>World Cinema Documentary</strong> section. Oscar-qualifying. Highest career-impact win possible.'},
+    'cph:dox':{tier:'S',content:'<h4>CPH:DOX — Copenhagen</h4><strong>Tier S European.</strong> Europe\'s most artistically ambitious doc fest. Strong sales market (CPH:Forum). Major buyers attend. Top prize: DOX:AWARD. NOT on FilmFreeway — submit directly via cphdox.dk.'},
+    'tiff':{tier:'S',content:'<h4>TIFF — Toronto International Film Festival</h4><strong>Tier S.</strong> Oscar-qualifying for shorts (Short Cuts section). Need a <strong>cut under 40 minutes</strong> for short-doc consideration. Submit via tiff.net/submissions, NOT FilmFreeway.'},
+    'hot docs':{tier:'S',content:'<h4>Hot Docs — Toronto</h4><strong>Tier S.</strong> North America\'s largest doc festival. <strong>Oscar-qualifying.</strong> Strongest commercial doors — Netflix, CBC, BBC scouts. Main deadline ~early Jan; late Oct opens for next cycle.'},
+    'sheffield':{tier:'S',content:'<h4>Sheffield DocFest</h4><strong>Tier S.</strong> UK\'s top doc fest. BBC, Channel 4, BFI commission deals. Oscar-qualifying. Deadline early Jan; festival runs June.'},
+    'idsffk':{tier:'A',content:'<h4>IDSFFK Kerala</h4><strong>Tier A India.</strong> Kerala govt-backed dedicated doc fest. <strong>Strong fit for "Against All Odds"</strong> — values social/political docs. Low fee ($10-20). Need CBFC certificate OR ₹200 stamp paper affidavit confirming completion date. Deadline May 10 typically.'},
+    'iffk':{tier:'A',content:'<h4>IFFK — Kerala Int\'l Film Festival</h4><strong>Tier A India.</strong> One of India\'s top 3 fests. Most discerning audience. Free entry for Indian films. Late deadline ~Sept 14. Top prize: Suvarna Chakoram (₹5 lakh).'},
+    'ji.hlava':{tier:'S',content:'<h4>Ji.hlava IDFF — Czech Republic</h4><strong>Tier S European.</strong> Central Europe\'s top doc fest. <strong>Unique rough-cut policy:</strong> submit by June 30 with rough cut, deliver final cut by Aug 15. Doesn\'t burn World Premiere. Festival runs late Oct/early Nov — could complement IDFA.'},
+    'jihlava':{tier:'S',content:'<h4>Ji.hlava IDFF — Czech Republic</h4><strong>Tier S European.</strong> Central Europe\'s top doc fest. <strong>Unique rough-cut policy:</strong> submit by June 30 with rough cut, deliver final cut by Aug 15. Doesn\'t burn World Premiere. Festival runs late Oct/early Nov — could complement IDFA.'},
+    'sitges':{tier:'S',content:'<h4>Sitges Film Festival</h4><strong>Tier S for genre cinema.</strong> One of world\'s top 3 fantasy/horror/sci-fi fests. ❌ <strong>WRONG FIT for "Against All Odds"</strong> — they only accept docs about fantastic/genre themes. Skip.'},
+    'naples':{tier:'B',content:'<h4>Naples International Film Festival (NIFF)</h4><strong>Tier B+ regional US.</strong> Run by Artis-Naples non-profit. 18 years, $2,500 doc prize, ~6% acceptance rate. NOT Oscar-qualifying despite marketing. Worth applying as Tier-B US play.'},
+    'santa fe':{tier:'B',content:'<h4>Santa Fe International Film Festival</h4><strong>Tier B+ regional US.</strong> Oscar-qualifying for SHORTS only (not features). 17 editions. "Young Sundance" branding. Worth applying after IDFA/Sundance results.'},
+    'arkipel':{tier:'B',content:'<h4>ARKIPEL Jakarta</h4><strong>Tier B+ niche.</strong> Run by Forum Lenteng. Strong curatorial credential, especially for socially/politically engaged + experimental docs. Good for SE Asian network. Already submitted ✓'},
+    'sasff':{tier:'B',content:'<h4>SASFF — South Asian Short Film Festival</h4><strong>Tier B+.</strong> Run by FFSI East — Satyajit Ray lineage. Award names: Ray, Ghatak, Sen, Shantaram. Real curatorial prestige. Already submitted ✓'},
+    'ksiff':{tier:'C',content:'<h4>KSIFF — Kolkata Shorts</h4><strong>Tier C commercial.</strong> Run by Miniboxoffice (commercial festival operator). Real screenings happen for a small subset, but most "selected" films just get a laurel. 14-year history. Apply only with budget surplus.'},
+    'msiff':{tier:'C',content:'<h4>MSIFF — Mumbai Shorts</h4><strong>Tier C commercial.</strong> Same Miniboxoffice operator as KSIFF. Real but commercial-tier.'},
+    'india movie awards':{tier:'D',content:'<h4>India Movie Awards</h4><strong>❌ Tier D — VANITY AWARD.</strong> No edition history, no named jury, name mimics Filmfare. Multiple identical-fee deadlines = monthly cash collection. <strong>Hard skip.</strong>'},
+    'asian filmfare':{tier:'D',content:'<h4>Asian International Filmfare Awards</h4><strong>❌ Tier D — VANITY.</strong> Mimics Filmfare brand. Deadlines spanning 2027-2029 = textbook vanity structure. Skip.'},
+    'iciff':{tier:'D',content:'<h4>India Chicago International Film Festival (ICIFF)</h4><strong>❌ Tier D — VANITY.</strong> Misleading "India + Chicago" name. No verifiable history. Skip.'},
+    'toronto international short film awards':{tier:'D',content:'<h4>Toronto International Short Film Awards</h4><strong>❌ Tier C/D — vanity-leaning.</strong> NOT TIFF Short Cuts. Naming mimics TIFF deliberately. Skip — apply to real TIFF instead via tiff.net/submissions.'},
+    'chicago shorts':{tier:'C',content:'<h4>Chicago Shorts (filmfreeway.com/ChicagoShorts)</h4><strong>Tier C.</strong> NOT the prestigious Chicago Int\'l Film Fest. "Random team of invited experts" jury, dual-tier model (most "selected" films don\'t actually screen). Skip — apply to <strong>Chicago International Film Festival</strong> instead (Oscar-qualifying).'},
+    'biffes':{tier:'A',content:'<h4>BIFFes — Bengaluru</h4><strong>Tier A India.</strong> Your home festival. Bengaluru tech audience = your direct viewer base. Government-backed. Free for Indian films.'},
+    'piff':{tier:'A',content:'<h4>PIFF — Pune International Film Festival</h4><strong>Tier A India.</strong> Government-backed. Strong academic audience. Good for entrepreneurship-themed docs.'},
+    'kiff':{tier:'A',content:'<h4>KIFF — Kolkata International Film Festival</h4><strong>Tier A India.</strong> One of Asia\'s oldest. Free. Intellectual audience that engages with social docs.'},
+    'miff':{tier:'A',content:'<h4>MIFF — Mumbai International Film Festival (NFDC)</h4><strong>Tier S India for docs.</strong> India\'s official documentary festival, biennial. Top prize: <strong>Golden Conch</strong> with ₹10 lakh cash. The premier doc credential in India. Submit via miff.in.'},
+    'diff':{tier:'A',content:'<h4>DIFF — Dharamshala Int\'l Film Festival</h4><strong>Tier A India.</strong> No competition or awards — pure curation. Free. Founded by Ritu Sarin and Tenzing Sonam. Strong indie doc reputation.'},
+    'midsff':{tier:'B',content:'<h4>MIDSFF — Madurai</h4><strong>Tier A India for docs.</strong> Oldest dedicated doc fest in India (since 1998). Pure documentary focus. Strong Tamil Nadu audience.'},
+    'doc nyc':{tier:'A',content:'<h4>DOC NYC</h4><strong>Tier A.</strong> Largest doc-only fest in USA. Oscar-qualifying. Less premiere-strict — good post-IDFA play. Strong industry attendance.'},
+    'true/false':{tier:'A',content:'<h4>True/False Film Festival</h4><strong>Tier A.</strong> Cult prestige. Bold, artistic docs only. Selection alone = top-tier credential. Deadline ~Dec 1.'},
+    'tribeca':{tier:'A',content:'<h4>Tribeca Film Festival</h4><strong>Tier A.</strong> NYC press tsunami. Strong entrepreneurship audience. Founded by Robert De Niro.'},
+    'visions du reel':{tier:'A',content:'<h4>Visions du Réel — Switzerland</h4><strong>Tier A.</strong> Critical kingmaker. European festival-circuit launch pad. Pure curation.'},
+    'cannes':{tier:'S',content:'<h4>Cannes Film Festival</h4><strong>Tier S+.</strong> Apply to <strong>L\'Œil d\'or (Golden Eye)</strong> — best documentary across Cannes. Only ~1 doc wins per year. Hardest doc award in the world.'},
+    'berlinale':{tier:'S',content:'<h4>Berlinale Documentary Award</h4><strong>Tier S.</strong> €40,000 prize. European broadcast deals (ARTE, ZDF). Forum and Panorama sections most relevant for docs.'},
+    'hot springs':{tier:'A',content:'<h4>Hot Springs Documentary Film Festival</h4><strong>Tier A.</strong> Oscar-qualifying. America\'s oldest doc fest. Solid US distribution play.'},
+    'newport beach':{tier:'B',content:'<h4>Newport Beach Film Festival</h4><strong>Tier B US regional.</strong> Solid mid-tier credential. Curated. Worth applying.'},
+    'new orleans':{tier:'A',content:'<h4>New Orleans Film Festival</h4><strong>Tier A US regional.</strong> Oscar-qualifying for shorts. Strong audience and reputation.'},
+    'msdff':{tier:'B',content:'<h4>MSDFF — Mumbai Short & Doc Fest</h4><strong>Tier B India.</strong> Free/low-fee. Social-justice section fits entrepreneurship doc theme well.'},
+    'world film festival kolkata':{tier:'B',content:'<h4>World Film Festival Kolkata</h4><strong>Tier B.</strong> Run by FFSI (Federation of Film Societies of India) — same lineage as SASFF. Real curatorial credibility, lower prestige than the city\'s main KIFF.'},
+    'impact docs':{tier:'C',content:'<h4>Impact Docs Awards</h4><strong>Tier C award-mill.</strong> Online judging only — gives laurels but no real festival/screening. Useful only for poster laurel padding.'}
+  },
+
+  // Topic-based responses
+  topics: [
+    {keys:['world premiere','wp','premiere status','what is premiere'],content:'<h4>World Premiere — Why It Matters</h4><strong>World Premiere = your most valuable, irreplaceable asset.</strong> Once any festival screens your film publicly — even a small one in India — it\'s gone forever.<br><br><strong>What counts as "premiere":</strong> Any public screening (festival, theatrical, broadcast, public event). Private programmer screenings, friends-and-family don\'t count.<br><br><strong>How festivals verify:</strong><ul><li>Self-declaration on submission form</li><li>FilmFreeway / Festhome database cross-check</li><li>IMDb lookup</li><li>Google search</li><li>Programmer networks talking to each other</li></ul><strong>Penalty for misrepresenting:</strong> Disqualification, removal from program, damaged programmer relationship.<br><br><strong>Top fests requiring WP:</strong> Sundance (main competition), IDFA (preferred), Sheffield, Hot Docs, True/False, CPH:DOX. Once you "spend" your WP at one of these, the rest accept International/National premieres instead.'},
+    {keys:['vanity','fake festival','spot vanity','award mill','red flags'],content:'<h4>How to Spot a Vanity Festival</h4><strong>Run any festival through this 7-point check:</strong><ul><li>✅ Multi-year history with archived past editions?</li><li>✅ Named jury with verifiable industry figures?</li><li>✅ Fixed annual event at known venue?</li><li>✅ Coverage in Variety / IndieWire / Indian Express / Hindu?</li><li>✅ Escalating fee structure (early < late)?</li><li>✅ Selective acceptance — some films rejected?</li><li>✅ Tight curated category list (5-10 categories)?</li></ul><strong>Score 0-2 = vanity. Score 3-4 = commercial-tier. Score 5+ = legitimate.</strong><br><br><strong>Common vanity patterns:</strong><ul><li>Names mimicking famous fests (e.g., "India Movie Awards" mimicking Filmfare)</li><li>Multiple identical-fee deadlines (continuous cash collection)</li><li>Sprawling category lists (everyone wins something)</li><li>"Random expert" jury with no names</li><li>Promoted FilmFreeway listings (paying for visibility)</li></ul>'},
+    {keys:['mami','submit to mami','how to submit'],content:'<h4>How to Submit to MAMI</h4><strong>Direct submission only:</strong> mumbaifilmfestival.com/submissions (NOT FilmFreeway).<br><br><strong>Free for Indian films.</strong><br><br><strong>Window:</strong> Opens April-May, closes ~July 15, decisions ~September, festival ~October-November.<br><br><strong>Section for your doc:</strong> India Gold — Documentary Competition.<br><br><strong>Need before submitting:</strong><ul><li>Vimeo password-protected screener</li><li>Synopsis (50w short + 200-300w long)</li><li>Director\'s statement (200-400w)</li><li>Director bio (50w short + 150w long)</li><li>5+ stills, 1920px+, JPEG</li><li>Production credits</li><li>Premiere status declaration</li></ul>'},
+    {keys:['top 10','top ten','dream festivals','best festivals'],content:'<h4>Top 10 Dream Festivals</h4><ol><li><strong>Sundance</strong> — career-defining, US prestige peak</li><li><strong>IDFA</strong> — world\'s #1 doc fest</li><li><strong>Cannes (L\'Œil d\'or)</strong> — rarest doc prize globally</li><li><strong>Hot Docs</strong> — Oscar-qualifying, distribution magnet</li><li><strong>Berlinale Documentary Award</strong> — €40k prize</li><li><strong>Sheffield DocFest</strong> — Oscar-qualifying, BBC/UK deals</li><li><strong>Tribeca</strong> — NYC press machine</li><li><strong>CPH:DOX</strong> — auteur prestige</li><li><strong>True/False</strong> — cult prestige</li><li><strong>Visions du Réel</strong> — critical kingmaker</li></ol><strong>Indian dream wins:</strong> National Film Award (Swarna Kamal), MIFF Golden Conch, MAMI Golden Gateway, IFFK Suvarna Chakoram.'},
+    {keys:['oscar','academy','qualifying'],content:'<h4>Oscar-Qualifying Festivals</h4><strong>For Documentary Feature:</strong> IDFA (Luminous), Hot Docs, DOC NYC, Sheffield DocFest, AFI Docs, Hot Springs, Camden, Sundance.<br><br><strong>For Documentary Short:</strong> Above + BISFF Bengaluru, Krakow, Santa Fe (shorts only), New Orleans (shorts only), TIFF Short Cuts, Chicago Int\'l Film Festival.<br><br><strong>What "qualifying" means:</strong> Win at one of these = your film auto-enters Academy Awards consideration shortlist. The Academy publishes the official list yearly at oscars.org.'},
+    {keys:['ji.hlava','jihlava','rough cut','rough-cut'],content:'<h4>Ji.hlava — Rough Cut Strategy</h4><strong>Three deadlines:</strong><ul><li>Feb 28 — films completed 2025</li><li>Apr 30 — films completed 2026 + already premiered</li><li><strong>June 30 — rough cuts + films not yet world-premiered</strong></li><li>Aug 15 — final cut delivery for rough-cut submissions</li></ul><strong>If you have a final cut:</strong> Submit June 30 directly as finished film with World Premiere claim. Skip Aug 15 step.<br><br><strong>If rough cut:</strong> Submit June 30 with rough cut → replace screener with final cut by Aug 15. No second fee.<br><br><strong>Why ideal:</strong> Doesn\'t burn WP. Festival runs late Oct/early Nov — complements IDFA (Nov 12-22) timeline.'},
+    {keys:['premiere strategy','how to plan','sequence','submission plan'],content:'<h4>Premiere-Protective Sequence</h4><strong>Phase 1 (May-June 2026):</strong> Submit IDFA (May 14, late deadline), CPH:DOX (May 15), Ji.hlava (June 30 rough cut). Hold on Indian festivals.<br><br><strong>Phase 2 (July-Aug):</strong> MAMI (free, July 15) + IFFI Indian Panorama (free, Aug 25) — Indian premiere doesn\'t burn international WP.<br><br><strong>Phase 3 (Sept):</strong> Sundance (Sept 1, WP required). IDFA decision arrives ~Sept 30.<br><br><strong>Phase 4 (Oct-Nov):</strong> If IDFA selected → premiere there Nov 12-22. If not → pivot to True/False (Dec 1), Hot Docs, MAMI screening.<br><br><strong>Universal rule:</strong> No public screenings (even small) until WP-required fests have decided.'},
+    {keys:['fee','submission fee','cost','how much'],content:'<h4>Submission Fees Overview</h4><strong>Free festivals:</strong> MAMI, MIFF, IFFI, IFFK, BIFFes, KIFF, PIFF, DIFF, MSDFF (most Indian govt-backed/society-backed).<br><br><strong>Low fee ($10-30):</strong> IDSFFK ($10), MSDFF ($5), F5IFF ($17), 15th Delhi Shorts ($6).<br><br><strong>Mid-tier ($30-60):</strong> IDFA ($40-€45), Sundance ($65-80), DIFF ($35-65), MIDSFF ($50), Sheffield ($55).<br><br><strong>High-fee ($60+):</strong> Tribeca ($70), DOC NYC ($65), Hot Docs ($75), Newport Beach ($85), Hot Springs ($65).<br><br><strong>FilmFreeway Gold subscription</strong> ($14.99/yr) gives ~10% off most fees.'},
+    {keys:['idsffk','kerala doc','what is idsffk'],content:'<h4>IDSFFK — Kerala Doc Festival</h4><strong>Tier A India.</strong> Kerala govt-backed, dedicated to documentary and short films. <strong>Strong fit for "Against All Odds".</strong><br><br><strong>Deadline:</strong> May 10, 2026<br><strong>Fee:</strong> $10 (very low)<br><strong>Need:</strong> CBFC certificate OR signed affidavit on ₹200 stamp paper confirming completion date between 1 May 2025 and 30 April 2026.<br><strong>Submit at:</strong> vp.eventival.com/idsffk/idsffk2026<br><br>This is one of your highest-priority May submissions.'}
+  ]
+};
+
+// Festival assistant logic
+function findKBMatch(query){
+  const q=query.toLowerCase().trim();
+  // Exact festival match
+  for(const[k,v] of Object.entries(KB.festivals)){
+    if(q.includes(k)) return v.content;
+  }
+  // Topic match
+  for(const t of KB.topics){
+    if(t.keys.some(k=>q.includes(k))) return t.content;
+  }
+  return null;
+}
+
+function appendMsg(role,content){
+  const conv=document.getElementById('botConv');
+  conv.classList.add('show');
+  const div=document.createElement('div');
+  div.className='bot-msg bot-msg-'+role;
+  div.innerHTML=`<div class="bubble">${content}</div>`;
+  conv.appendChild(div);
+  conv.scrollTop=conv.scrollHeight;
+  return div;
+}
+
+function askBot(qOverride){
+  const input=document.getElementById('botInput');
+  const q=qOverride||input.value.trim();
+  if(!q) return;
+  appendMsg('user',escapeHtml(q));
+  input.value='';
+  const thinking=appendMsg('bot','<span class="bot-thinking">Searching</span>');
+  setTimeout(()=>{
+    const answer=findKBMatch(q);
+    if(answer){
+      thinking.querySelector('.bubble').innerHTML=answer;
+    } else {
+      thinking.querySelector('.bubble').innerHTML=`<strong>I don't have that one in my knowledge base yet.</strong><br><br>I'm loaded with the festivals and topics we've discussed: IDFA, MAMI, Sundance, CPH:DOX, Ji.hlava, Sitges, Naples, ARKIPEL, SASFF, KSIFF, India Movie Awards, vanity-spotting, premiere strategy, Oscar-qualifying lists, MAMI submission, fees, and more.<br><br>For new festivals or deeper questions: <a href="https://claude.ai" target="_blank" rel="noopener">Ask Claude →</a>`;
+    }
+  },350);
+}
+
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// Suggestion chips
+document.querySelectorAll('.bot-chip').forEach(c=>{
+  c.addEventListener('click',()=>askBot(c.dataset.q));
+});
+
+// ============= TRACKER LOGIC =============
+const STORAGE_KEY='aao_may26';
+function loadStatus(){return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}
+function saveStatus(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s))}
+function setStatus(name,status){const s=loadStatus();s[name]=status;saveStatus(s)}
+function getStatus(name){const s=loadStatus();return s[name]||null}
+
+const today=new Date(); today.setHours(0,0,0,0);
+let currentFilter='all', searchTerm='';
+
+function fmtDate(d){if(!d)return '—';const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function daysUntil(d){if(!d)return null;const dt=new Date(d);dt.setHours(0,0,0,0);return Math.round((dt-today)/(1000*60*60*24))}
+function feeStr(f){if(f===null||f===undefined)return 'TBC';if(f===0)return 'Free';return '$'+(Number.isInteger(f)?f:f.toFixed(2))}
+
+function renderSummary(){
+  const all=FESTIVALS;
+  const submitted=all.filter(f=>(getStatus(f.name)||f.status)==='Submitted').length;
+  const inProgress=all.filter(f=>(getStatus(f.name)||f.status)==='In progress').length;
+  const remaining=all.length-submitted;
+  const urgent=all.filter(f=>{const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&(getStatus(f.name)||f.status)!=='Submitted'}).length;
+  const totalFee=all.filter(f=>(getStatus(f.name)||f.status)==='Submitted'&&f.fee).reduce((s,f)=>s+f.fee,0);
+  const priority=all.filter(f=>f.rec==='Priority'&&(getStatus(f.name)||f.status)!=='Submitted').length;
+
+  document.getElementById('summary').innerHTML=`
+    <span><b>${all.length}</b>Total</span>
+    <span><b>${submitted}</b>Submitted</span>
+    <span><b>${inProgress}</b>In progress</span>
+    <span><b>${remaining}</b>Remaining</span>
+    <span class="urgent"><b>${urgent}</b>Urgent (≤7d)</span>
+    <span><b>${priority}</b>Priority Apply</span>
+    <span><b>$${totalFee.toFixed(2)}</b>Spent so far</span>`;
+}
+
+function render(){
+  let list=FESTIVALS.slice();
+  if(searchTerm){const t=searchTerm.toLowerCase();list=list.filter(f=>f.name.toLowerCase().includes(t)||(f.category||'').toLowerCase().includes(t))}
+  if(currentFilter!=='all'){
+    list=list.filter(f=>{
+      const status=getStatus(f.name)||f.status;
+      if(currentFilter==='priority') return f.rec==='Priority';
+      if(currentFilter==='apply') return f.rec==='Apply';
+      if(currentFilter==='strategic') return f.rec==='Strategic';
+      if(currentFilter==='skip') return f.rec==='Skip';
+      if(currentFilter==='submitted') return status==='Submitted';
+      if(currentFilter==='urgent'){const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&status!=='Submitted'}
+      return true;
+    });
+  }
+  // sort by deadline asc, then by tier
+  list.sort((a,b)=>{
+    const da=a.deadline?new Date(a.deadline).getTime():Infinity;
+    const db=b.deadline?new Date(b.deadline).getTime():Infinity;
+    if(da!==db) return da-db;
+    return (a.tier||'Z').localeCompare(b.tier||'Z');
+  });
+
+  const el=document.getElementById('festsList');
+  if(!list.length){el.innerHTML='<div class="empty">No festivals match.</div>';return}
+
+  el.innerHTML=list.map(f=>{
+    const status=getStatus(f.name)||f.status;
+    const submitted=status==='Submitted';
+    const days=daysUntil(f.deadline);
+    let dlClass='';
+    if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
+    const recClass='rec-'+(f.rec||'').toLowerCase();
+    const safeUrl=(f.link||'').replace(/"/g,'&quot;');
+    const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+
+    return `<div class="fest-card tier-${f.tier} ${submitted?'submitted':''}">
+      <div class="fest-top">
+        <div class="fest-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}</div>
+        <span class="tier-pill tier-${f.tier}">Tier ${f.tier}</span>
+      </div>
+      <div class="fest-meta">
+        <span class="${dlClass}">📅 <b>${fmtDate(f.deadline)}</b>${days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'tomorrow':days+' days'})`:days!==null&&days<0?' (passed)':''}</span>
+        <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b></span>
+        ${f.category?`<span class="fest-cat">${esc(f.category)}</span>`:''}
+      </div>
+      ${f.rec?`<div><span class="fest-rec ${recClass}">${esc(f.rec).toUpperCase()}</span></div>`:''}
+      ${f.notes?`<div class="fest-notes">${esc(f.notes)}</div>`:''}
+      <div class="fest-actions">
+        <select class="status-select" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
+          <option ${status==='Not started'?'selected':''}>Not started</option>
+          <option ${status==='In progress'?'selected':''}>In progress</option>
+          <option ${status==='Submitted'?'selected':''}>Submitted</option>
+          <option ${status==='Selected'?'selected':''}>Selected</option>
+          <option ${status==='Rejected'?'selected':''}>Rejected</option>
+          <option ${status==='Skipped'?'selected':''}>Skipped</option>
+        </select>
+        ${f.link?`<button class="copy-btn" onclick="copyUrl(this,'${safeUrlJs}')" title="Copy URL">⧉</button>`:''}
+        ${f.link?`<a class="apply-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Apply →</a>`:`<span class="apply-btn disabled">No link</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStatus(name,status){
+  setStatus(name,status);
+  renderSummary();
+  render();
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function copyUrl(btn,url){
+  navigator.clipboard.writeText(url).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✓';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('done')},1500);
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input',e=>{searchTerm=e.target.value;render()});
+document.querySelectorAll('.chip[data-filter]').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip[data-filter]').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    currentFilter=c.dataset.filter;
+    render();
+  });
+});
+
+renderSummary();
+render();
+</script>
+</body>
+</html>
