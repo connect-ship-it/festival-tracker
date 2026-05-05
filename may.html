@@ -135,6 +135,53 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
 
 .empty{text-align:center;padding:40px;color:var(--text2)}
 @media(max-width:700px){.fests{grid-template-columns:1fr}.app{padding:12px}}
+
+/* Money summary */
+.money-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.money-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;gap:3px}
+.money-card.spent{border-left:3px solid var(--accent)}
+.money-card.planned{border-left:3px solid var(--strategic)}
+.money-card.skipped{border-left:3px solid var(--text3)}
+.money-card.budget{border-left:3px solid var(--tier-s)}
+.money-card .label{font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.money-card .amount{font-size:1.5rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.money-card .amount.green{color:var(--accent)}
+.money-card .amount.amber{color:var(--strategic)}
+.money-card .sub{font-size:.7rem;color:var(--text2)}
+
+/* View toggle */
+.view-toggle{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2px;margin-left:auto}
+.view-toggle button{background:transparent;border:none;color:var(--text2);padding:4px 12px;font-size:.7rem;font-weight:500;cursor:pointer;border-radius:12px;display:inline-flex;align-items:center;gap:4px}
+.view-toggle button.active{background:var(--accent);color:#0f1115;font-weight:600}
+.view-toggle button:hover:not(.active){color:var(--text)}
+
+/* List view */
+.fests.list-view{display:block}
+.fests.list-view .list-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:.78rem}
+.fests.list-view th{background:var(--surface2);text-align:left;padding:10px 12px;font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);border-bottom:1px solid var(--border2);white-space:nowrap}
+.fests.list-view td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.fests.list-view tbody tr:hover{background:var(--surface2)}
+.fests.list-view tbody tr:last-child td{border-bottom:none}
+.fests.list-view tbody tr.submitted-row{opacity:.55}
+.fests.list-view tbody tr.submitted-row .lv-name{text-decoration:line-through}
+.lv-tier{display:inline-block;width:22px;height:22px;line-height:18px;text-align:center;font-size:.65rem;font-weight:700;border-radius:4px;border:2px solid}
+.lv-tier.tier-S{color:var(--tier-s);border-color:var(--tier-s);background:rgba(192,132,252,.1)}
+.lv-tier.tier-A{color:var(--tier-a);border-color:var(--tier-a);background:rgba(134,239,172,.1)}
+.lv-tier.tier-B{color:var(--tier-b);border-color:var(--tier-b);background:rgba(251,191,36,.1)}
+.lv-tier.tier-C{color:var(--tier-c);border-color:var(--tier-c);background:rgba(156,163,175,.1)}
+.lv-tier.tier-D{color:var(--tier-d);border-color:var(--tier-d);background:rgba(248,113,113,.1)}
+.lv-name{font-weight:600;color:var(--text);max-width:280px}
+.lv-name a{color:inherit;text-decoration:none}
+.lv-name a:hover{color:var(--accent)}
+.lv-deadline{font-weight:500;white-space:nowrap}
+.lv-deadline.deadline-near{color:var(--skip);font-weight:700}
+.lv-deadline.deadline-soon{color:var(--strategic);font-weight:600}
+.lv-deadline.deadline-passed{color:var(--text3);text-decoration:line-through}
+.lv-fee{font-weight:600;color:var(--text);white-space:nowrap}
+.lv-fee.free{color:var(--accent)}
+.lv-rec{font-size:.66rem;font-weight:600;padding:2px 7px;border-radius:8px}
+.lv-actions{white-space:nowrap;display:inline-flex;gap:4px;align-items:center}
+.lv-status{padding:3px 6px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;font-size:.7rem;cursor:pointer;outline:none}
 </style>
 </head>
 <body>
@@ -186,6 +233,9 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
   <!-- Summary -->
   <div class="summary" id="summary"></div>
 
+  <!-- Money tracker -->
+  <div class="money-row" id="moneyRow"></div>
+
   <!-- Filters -->
   <div class="controls">
     <input class="search" id="searchInput" placeholder="Search festival...">
@@ -196,6 +246,10 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
     <div class="chip" data-filter="skip">Skip</div>
     <div class="chip" data-filter="submitted">Submitted</div>
     <div class="chip" data-filter="urgent">⚡ Urgent (≤7d)</div>
+    <div class="view-toggle">
+      <button id="viewCard" class="active" onclick="setView('card')">▦ Cards</button>
+      <button id="viewList" onclick="setView('list')">☰ List</button>
+    </div>
   </div>
 
   <div class="fests" id="festsList"></div>
@@ -363,6 +417,15 @@ function getStatus(name){const s=loadStatus();return s[name]||null}
 
 const today=new Date(); today.setHours(0,0,0,0);
 let currentFilter='all', searchTerm='';
+let currentView=localStorage.getItem('aao_may26_view')||'card';
+
+function setView(v){
+  currentView=v;
+  localStorage.setItem('aao_may26_view',v);
+  document.getElementById('viewCard').classList.toggle('active',v==='card');
+  document.getElementById('viewList').classList.toggle('active',v==='list');
+  render();
+}
 
 function fmtDate(d){if(!d)return '—';const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
 function daysUntil(d){if(!d)return null;const dt=new Date(d);dt.setHours(0,0,0,0);return Math.round((dt-today)/(1000*60*60*24))}
@@ -370,12 +433,12 @@ function feeStr(f){if(f===null||f===undefined)return 'TBC';if(f===0)return 'Free
 
 function renderSummary(){
   const all=FESTIVALS;
-  const submitted=all.filter(f=>(getStatus(f.name)||f.status)==='Submitted').length;
-  const inProgress=all.filter(f=>(getStatus(f.name)||f.status)==='In progress').length;
+  const getS=f=>getStatus(f.name)||f.status;
+  const submitted=all.filter(f=>getS(f)==='Submitted').length;
+  const inProgress=all.filter(f=>getS(f)==='In progress').length;
   const remaining=all.length-submitted;
-  const urgent=all.filter(f=>{const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&(getStatus(f.name)||f.status)!=='Submitted'}).length;
-  const totalFee=all.filter(f=>(getStatus(f.name)||f.status)==='Submitted'&&f.fee).reduce((s,f)=>s+f.fee,0);
-  const priority=all.filter(f=>f.rec==='Priority'&&(getStatus(f.name)||f.status)!=='Submitted').length;
+  const urgent=all.filter(f=>{const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&getS(f)!=='Submitted'}).length;
+  const priority=all.filter(f=>f.rec==='Priority'&&getS(f)!=='Submitted').length;
 
   document.getElementById('summary').innerHTML=`
     <span><b>${all.length}</b>Total</span>
@@ -383,8 +446,55 @@ function renderSummary(){
     <span><b>${inProgress}</b>In progress</span>
     <span><b>${remaining}</b>Remaining</span>
     <span class="urgent"><b>${urgent}</b>Urgent (≤7d)</span>
-    <span><b>${priority}</b>Priority Apply</span>
-    <span><b>$${totalFee.toFixed(2)}</b>Spent so far</span>`;
+    <span><b>${priority}</b>Priority Apply</span>`;
+
+  renderMoneyRow();
+}
+
+function renderMoneyRow(){
+  const getS=f=>getStatus(f.name)||f.status;
+  const isSkipped=f=>{const s=getS(f);return s==='Skipped'||(s==='Not started'&&f.rec==='Skip')};
+
+  // Money already spent — submitted festivals
+  const spent=FESTIVALS.filter(f=>getS(f)==='Submitted'&&f.fee).reduce((s,f)=>s+f.fee,0);
+
+  // Money planned to spend — not submitted, not skipped, has a fee
+  const planned=FESTIVALS.filter(f=>{
+    const s=getS(f);
+    return s!=='Submitted'&&!isSkipped(f)&&f.fee
+  }).reduce((sum,f)=>sum+f.fee,0);
+
+  // Money saved by skipping
+  const skippedAmount=FESTIVALS.filter(f=>isSkipped(f)&&f.fee).reduce((s,f)=>s+f.fee,0);
+
+  const total=spent+planned;
+
+  // Counts for sub-text
+  const spentCount=FESTIVALS.filter(f=>getS(f)==='Submitted').length;
+  const plannedCount=FESTIVALS.filter(f=>{const s=getS(f);return s!=='Submitted'&&!isSkipped(f)}).length;
+  const skippedCount=FESTIVALS.filter(f=>isSkipped(f)).length;
+
+  document.getElementById('moneyRow').innerHTML=`
+    <div class="money-card spent">
+      <div class="label">Spent so far</div>
+      <div class="amount green">$${spent.toFixed(2)}</div>
+      <div class="sub">${spentCount} festival${spentCount!==1?'s':''} submitted</div>
+    </div>
+    <div class="money-card planned">
+      <div class="label">Yet to spend</div>
+      <div class="amount amber">$${planned.toFixed(2)}</div>
+      <div class="sub">${plannedCount} pending application${plannedCount!==1?'s':''}</div>
+    </div>
+    <div class="money-card budget">
+      <div class="label">Total May budget</div>
+      <div class="amount">$${total.toFixed(2)}</div>
+      <div class="sub">Spent + Planned (excl. skipped)</div>
+    </div>
+    <div class="money-card skipped">
+      <div class="label">Saved by skipping</div>
+      <div class="amount">$${skippedAmount.toFixed(2)}</div>
+      <div class="sub">${skippedCount} skip-flagged festival${skippedCount!==1?'s':''}</div>
+    </div>`;
 }
 
 function render(){
@@ -411,8 +521,17 @@ function render(){
   });
 
   const el=document.getElementById('festsList');
+  el.classList.toggle('list-view',currentView==='list');
   if(!list.length){el.innerHTML='<div class="empty">No festivals match.</div>';return}
 
+  if(currentView==='list'){
+    renderListView(list,el);
+  } else {
+    renderCardView(list,el);
+  }
+}
+
+function renderCardView(list,el){
   el.innerHTML=list.map(f=>{
     const status=getStatus(f.name)||f.status;
     const submitted=status==='Submitted';
@@ -451,6 +570,59 @@ function render(){
   }).join('');
 }
 
+function renderListView(list,el){
+  const rows=list.map(f=>{
+    const status=getStatus(f.name)||f.status;
+    const submitted=status==='Submitted';
+    const days=daysUntil(f.deadline);
+    let dlClass='';
+    if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
+    const recClass='rec-'+(f.rec||'').toLowerCase();
+    const safeUrl=(f.link||'').replace(/"/g,'&quot;');
+    const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+    const dlSuffix=days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'1d':days+'d'})`:days!==null&&days<0?' (passed)':'';
+
+    return `<tr class="${submitted?'submitted-row':''}">
+      <td><span class="lv-tier tier-${f.tier}">${f.tier||'?'}</span></td>
+      <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}</td>
+      <td class="lv-deadline ${dlClass}">${fmtDate(f.deadline)}${dlSuffix}</td>
+      <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}</td>
+      <td>${f.rec?`<span class="lv-rec ${recClass}">${esc(f.rec)}</span>`:''}</td>
+      <td>${esc(f.category||'—')}</td>
+      <td>
+        <select class="lv-status" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
+          <option ${status==='Not started'?'selected':''}>Not started</option>
+          <option ${status==='In progress'?'selected':''}>In progress</option>
+          <option ${status==='Submitted'?'selected':''}>Submitted</option>
+          <option ${status==='Selected'?'selected':''}>Selected</option>
+          <option ${status==='Rejected'?'selected':''}>Rejected</option>
+          <option ${status==='Skipped'?'selected':''}>Skipped</option>
+        </select>
+      </td>
+      <td class="lv-actions">
+        ${f.link?`<button class="copy-btn" onclick="copyUrl(this,'${safeUrlJs}')" title="Copy URL">⧉</button>`:''}
+        ${f.link?`<a class="apply-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Apply →</a>`:`<span class="apply-btn disabled">—</span>`}
+      </td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`<table class="list-table">
+    <thead>
+      <tr>
+        <th style="width:38px">Tier</th>
+        <th>Festival</th>
+        <th>Deadline</th>
+        <th>Fee</th>
+        <th>Decision</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 function updateStatus(name,status){
   setStatus(name,status);
   renderSummary();
@@ -476,6 +648,12 @@ document.querySelectorAll('.chip[data-filter]').forEach(c=>{
     render();
   });
 });
+
+// Restore view from localStorage on load
+if(currentView==='list'){
+  document.getElementById('viewCard').classList.remove('active');
+  document.getElementById('viewList').classList.add('active');
+}
 
 renderSummary();
 render();
