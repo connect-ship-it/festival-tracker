@@ -117,6 +117,10 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
 .fest-cat{font-size:.72rem;color:var(--text2);background:var(--surface2);padding:3px 8px;border-radius:4px;display:inline-block}
 .cat-multi{font-size:.6rem;font-weight:700;color:#0f1115;background:var(--accent);padding:1px 6px;border-radius:8px;margin-left:4px;letter-spacing:.04em;vertical-align:middle}
 .fee-detail{font-size:.62rem;color:var(--text3);font-weight:400;margin-left:3px}
+.deadline-select{padding:2px 6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:4px;font-size:.7rem;cursor:pointer;outline:none;font-weight:500;max-width:240px}
+.deadline-select:focus{border-color:var(--accent)}
+.deadline-select option{background:var(--surface);color:var(--text)}
+.deadline-tier-pill{display:inline-block;font-size:.58rem;font-weight:700;color:var(--accent);background:var(--accent-dim);padding:1px 6px;border-radius:8px;text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
 
 .fest-rec{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:8px;display:inline-block}
 .rec-priority{background:rgba(134,239,172,.12);color:var(--apply)}
@@ -321,7 +325,7 @@ const FESTIVALS = [
   {name:"Hot Springs Documentary Film Festival",deadline:"2026-06-20",fee:65,category:"Best Documentary",notes:"Oscar-qualifying. America's oldest doc fest. June deadline but listed for May planning.",link:"https://hsdff.org/",status:"Not started",tier:"A",rec:"Apply"},
   {name:"Newport Beach Film Festival",deadline:"2026-05-29",fee:85,category:"Feature Documentary",notes:"Include 1 screenshot (4×5″, min 300dpi) — no posters/text/collages. Solid US regional festival.",comments:"Please include one screenshot (4×5″) of high quality (min 300dpi) with your submission. No posters, text on image or collages please.",link:"https://newportbeachfilmfest.com/",status:"Not started",tier:"B",rec:"Apply"},
   {name:"New Orleans Film Festival",deadline:"2026-05-29",fee:76,category:"Documentary Feature",notes:"Oscar-qualifying for shorts. Solid US regional reputation. Strong audience.",link:"https://neworleansfilmsociety.org/",status:"Not started",tier:"A",rec:"Apply"},
-  {name:"Santa Fe International Film Festival",deadline:"2026-05-06",fee:58.50,category:"International Feature",notes:"⚡ DEADLINE TOMORROW. Tier B+ regional US. Oscar-qualifying for shorts only (not features). 'Young Sundance' branding.",link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"Santa Fe International Film Festival",deadlines:[{label:"Earlybird",date:"2026-03-04",fee:39},{label:"Regular",date:"2026-05-06",fee:58.50},{label:"Late",date:"2026-06-03",fee:75},{label:"Final",date:"2026-07-09",fee:85}],category:"International Feature",notes:"Tier B+ regional US. Oscar-qualifying for shorts only (not features). 'Young Sundance' branding. Festival Oct 14-19, 2026. Notification Sept 9. Late/Final fees estimated — verify on FilmFreeway.",link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",status:"Not started",tier:"B",rec:"Apply"},
   {name:"World Film Festival Kolkata (FFSI)",deadline:"2026-05-31",fee:40,category:"Documentary",notes:"Run by FFSI (Federation of Film Societies of India). Same lineage as SASFF. Real curatorial credibility.",link:"https://ffsi.org.in/world-film-festival-kolkata/",status:"Not started",tier:"B",rec:"Apply"},
   {name:"MSDFF — Mumbai Short & Documentary Film Festival",deadline:"2026-05-05",fee:10.80,feePerCategory:5.40,categoriesApplied:2,category:"Documentary Feature + Indian Documentary",notes:"Submitted in 2 categories. Excellent low-fee Indian doc fest. Social-justice section fits theme.",link:"https://filmfreeway.com/msdffest",status:"Submitted",tier:"B",rec:"Apply"},
   {name:"MUMBA International Film Festival",deadline:"2026-05-31",fee:43,category:"Feature Doc",notes:"Mid-tier Indian fest. Verify legitimacy before paying — check for edition history.",link:"https://mumbafilmfestival.com/",status:"Not started",tier:"C",rec:"Strategic"},
@@ -559,6 +563,34 @@ const today=new Date(); today.setHours(0,0,0,0);
 let currentFilter='all', searchTerm='';
 let currentView=localStorage.getItem('aao_may26_view')||'card';
 
+// ===== Multi-deadline helpers =====
+function getDeadlineSelection(name){
+  const v=localStorage.getItem('aao_may26_dl_'+name);
+  return v===null?null:parseInt(v);
+}
+function setDeadlineSelection(name,idx){
+  localStorage.setItem('aao_may26_dl_'+name,String(idx));
+}
+function getActiveDeadline(f){
+  // Multi-deadline mode
+  if(f.deadlines && f.deadlines.length){
+    const stored=getDeadlineSelection(f.name);
+    if(stored!==null && f.deadlines[stored]){
+      return {...f.deadlines[stored], idx: stored};
+    }
+    // Auto-pick: nearest non-passed deadline
+    let pickIdx=f.deadlines.findIndex(d=>{
+      if(!d.date) return false;
+      const dt=new Date(d.date); dt.setHours(0,0,0,0);
+      return dt>=today;
+    });
+    if(pickIdx===-1) pickIdx=f.deadlines.length-1; // all passed → last
+    return {...f.deadlines[pickIdx], idx: pickIdx};
+  }
+  // Single-deadline (legacy)
+  return {label:'', date:f.deadline, fee:f.fee, idx:-1};
+}
+
 function setView(v){
   currentView=v;
   localStorage.setItem('aao_may26_view',v);
@@ -577,7 +609,7 @@ function renderSummary(){
   const submitted=all.filter(f=>getS(f)==='Submitted').length;
   const inProgress=all.filter(f=>getS(f)==='In progress').length;
   const remaining=all.length-submitted;
-  const urgent=all.filter(f=>{const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&getS(f)!=='Submitted'}).length;
+  const urgent=all.filter(f=>{const dl=getActiveDeadline(f);const d=daysUntil(dl.date);return d!==null&&d>=0&&d<=7&&getS(f)!=='Submitted'}).length;
 
   document.getElementById('summary').innerHTML=`
     <span><b>${all.length}</b>Total</span>
@@ -592,15 +624,16 @@ function renderSummary(){
 function renderMoneyRow(){
   const getS=f=>getStatus(f.name)||f.status;
   const isSkipped=f=>getS(f)==='Skipped';
+  const feeOf=f=>{const dl=getActiveDeadline(f);return dl.fee||0};
 
-  // Money already spent — submitted festivals
-  const spent=FESTIVALS.filter(f=>getS(f)==='Submitted'&&f.fee).reduce((s,f)=>s+f.fee,0);
+  // Money already spent — submitted festivals (use the actual stored f.fee for submitted)
+  const spent=FESTIVALS.filter(f=>getS(f)==='Submitted').reduce((s,f)=>s+(f.fee||feeOf(f)||0),0);
 
-  // Money planned to spend — not submitted, not skipped, has a fee
+  // Money planned to spend — not submitted, not skipped, uses active deadline's fee
   const planned=FESTIVALS.filter(f=>{
     const s=getS(f);
-    return s!=='Submitted'&&!isSkipped(f)&&f.fee
-  }).reduce((sum,f)=>sum+f.fee,0);
+    return s!=='Submitted'&&!isSkipped(f)
+  }).reduce((sum,f)=>sum+feeOf(f),0);
 
   const total=spent+planned;
 
@@ -635,14 +668,15 @@ function render(){
       if(currentFilter==='tierA') return f.tier==='A';
       if(currentFilter==='tierB') return f.tier==='B';
       if(currentFilter==='submitted') return status==='Submitted';
-      if(currentFilter==='urgent'){const d=daysUntil(f.deadline);return d!==null&&d>=0&&d<=7&&status!=='Submitted'}
+      if(currentFilter==='urgent'){const dl=getActiveDeadline(f);const d=daysUntil(dl.date);return d!==null&&d>=0&&d<=7&&status!=='Submitted'}
       return true;
     });
   }
-  // sort by deadline asc, then by tier
+  // sort by ACTIVE deadline asc, then by tier
   list.sort((a,b)=>{
-    const da=a.deadline?new Date(a.deadline).getTime():Infinity;
-    const db=b.deadline?new Date(b.deadline).getTime():Infinity;
+    const dla=getActiveDeadline(a), dlb=getActiveDeadline(b);
+    const da=dla.date?new Date(dla.date).getTime():Infinity;
+    const db=dlb.date?new Date(dlb.date).getTime():Infinity;
     if(da!==db) return da-db;
     return (a.tier||'Z').localeCompare(b.tier||'Z');
   });
@@ -662,12 +696,27 @@ function renderCardView(list,el){
   el.innerHTML=list.map(f=>{
     const status=getStatus(f.name)||f.status;
     const submitted=status==='Submitted';
-    const days=daysUntil(f.deadline);
+    const dl=getActiveDeadline(f);
+    const activeFee = (submitted && f.fee) ? f.fee : dl.fee;
+    const days=daysUntil(dl.date);
     let dlClass='';
     if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
     const recClass='rec-'+(f.rec||'').toLowerCase();
     const safeUrl=(f.link||'').replace(/"/g,'&quot;');
     const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+    const safeName=esc(f.name).replace(/'/g,"&#39;");
+
+    // Build deadline dropdown if multi-deadline
+    let deadlineDropdown='';
+    if(f.deadlines && f.deadlines.length>1){
+      const opts=f.deadlines.map((d,i)=>{
+        const dt=new Date(d.date);dt.setHours(0,0,0,0);
+        const passed=dt<today;
+        const feeLabel=d.fee==null?'TBC':d.fee===0?'Free':'$'+(Number.isInteger(d.fee)?d.fee:d.fee.toFixed(2));
+        return `<option value="${i}" ${i===dl.idx?'selected':''}>${esc(d.label)}: ${fmtDate(d.date)} • ${feeLabel}${passed?' (passed)':''}</option>`;
+      }).join('');
+      deadlineDropdown=`<select class="deadline-select" onchange="updateDeadlineSelection('${safeName}',this.value)" title="Switch to a different deadline tier">${opts}</select>`;
+    }
 
     return `<div class="fest-card tier-${f.tier} ${submitted?'submitted':''}">
       <div class="fest-top">
@@ -675,10 +724,11 @@ function renderCardView(list,el){
         <span class="tier-pill tier-${f.tier}">Tier ${f.tier}</span>
       </div>
       <div class="fest-meta">
-        <span class="${dlClass}">📅 <b>${fmtDate(f.deadline)}</b>${days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'tomorrow':days+' days'})`:days!==null&&days<0?' (passed)':''}</span>
-        <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b>${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail">(${f.categoriesApplied}× $${f.feePerCategory})</span>`:''}</span>
+        <span class="${dlClass}">📅 ${dl.label?`<span class="deadline-tier-pill">${esc(dl.label)}</span>`:''}<b>${fmtDate(dl.date)}</b>${days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'tomorrow':days+' days'})`:days!==null&&days<0?' (passed)':''}</span>
+        <span class="${activeFee===0?'free':''}">💰 <b>${feeStr(activeFee)}</b>${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail">(${f.categoriesApplied}× $${f.feePerCategory})</span>`:''}</span>
         ${f.category?`<span class="fest-cat">${esc(f.category)}${f.categoriesApplied&&f.categoriesApplied>1?`<span class="cat-multi">×${f.categoriesApplied}</span>`:''}</span>`:''}
       </div>
+      ${deadlineDropdown?`<div style="font-size:.7rem;color:var(--text3);display:flex;align-items:center;gap:6px"><span>Switch tier:</span>${deadlineDropdown}</div>`:''}
       ${f.comments?`<div class="fest-comments"><span class="comments-icon">💬</span><div><span class="comments-label">Team comment</span><span class="comments-text">${esc(f.comments)}</span></div></div>`:''}
       ${f.notes?`<div class="fest-notes">${esc(f.notes)}</div>`:''}
       <div class="fest-actions">
@@ -701,20 +751,37 @@ function renderListView(list,el){
   const rows=list.map(f=>{
     const status=getStatus(f.name)||f.status;
     const submitted=status==='Submitted';
-    const days=daysUntil(f.deadline);
+    const dl=getActiveDeadline(f);
+    const activeFee=(submitted && f.fee) ? f.fee : dl.fee;
+    const days=daysUntil(dl.date);
     let dlClass='';
     if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
     const recClass='rec-'+(f.rec||'').toLowerCase();
     const safeUrl=(f.link||'').replace(/"/g,'&quot;');
     const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+    const safeName=esc(f.name).replace(/'/g,"&#39;");
     const dlSuffix=days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'1d':days+'d'})`:days!==null&&days<0?' (passed)':'';
+
+    // Deadline cell: dropdown if multi, plain text if single
+    let deadlineCell;
+    if(f.deadlines && f.deadlines.length>1){
+      const opts=f.deadlines.map((d,i)=>{
+        const dt=new Date(d.date);dt.setHours(0,0,0,0);
+        const passed=dt<today;
+        const feeLabel=d.fee==null?'TBC':d.fee===0?'Free':'$'+(Number.isInteger(d.fee)?d.fee:d.fee.toFixed(2));
+        return `<option value="${i}" ${i===dl.idx?'selected':''}>${esc(d.label)}: ${fmtDate(d.date)} • ${feeLabel}${passed?' (×)':''}</option>`;
+      }).join('');
+      deadlineCell=`<select class="deadline-select" onchange="updateDeadlineSelection('${safeName}',this.value)">${opts}</select><span class="lv-deadline ${dlClass}" style="margin-left:6px;font-size:.7rem">${dlSuffix}</span>`;
+    } else {
+      deadlineCell=`<span class="lv-deadline ${dlClass}">${fmtDate(dl.date)}${dlSuffix}</span>`;
+    }
 
     const commentBadge=f.comments?`<span class="lv-comments-icon" title="${esc(f.comments)}">💬<span class="lv-comments-pop"><strong>Team comment</strong>${esc(f.comments)}</span></span>`:'';
     return `<tr class="${submitted?'submitted-row':''}">
       <td><span class="lv-tier tier-${f.tier}">${f.tier||'?'}</span></td>
       <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}${commentBadge}</td>
-      <td class="lv-deadline ${dlClass}">${fmtDate(f.deadline)}${dlSuffix}</td>
-      <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail"> (${f.categoriesApplied}×)</span>`:''}</td>
+      <td>${deadlineCell}</td>
+      <td class="lv-fee ${activeFee===0?'free':''}">${feeStr(activeFee)}${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail"> (${f.categoriesApplied}×)</span>`:''}</td>
       <td>${esc(f.category||'—')}${f.categoriesApplied&&f.categoriesApplied>1?` <span class="cat-multi">×${f.categoriesApplied}</span>`:''}</td>
       <td>
         <select class="lv-status" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
@@ -751,6 +818,12 @@ function renderListView(list,el){
 
 function updateStatus(name,status){
   setStatus(name,status);
+  renderSummary();
+  render();
+}
+
+function updateDeadlineSelection(name,idx){
+  setDeadlineSelection(name,parseInt(idx));
   renderSummary();
   render();
 }
