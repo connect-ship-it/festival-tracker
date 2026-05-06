@@ -115,6 +115,8 @@ h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
 .fest-meta .free b{color:var(--accent)}
 
 .fest-cat{font-size:.72rem;color:var(--text2);background:var(--surface2);padding:3px 8px;border-radius:4px;display:inline-block}
+.cat-multi{font-size:.6rem;font-weight:700;color:#0f1115;background:var(--accent);padding:1px 6px;border-radius:8px;margin-left:4px;letter-spacing:.04em;vertical-align:middle}
+.fee-detail{font-size:.62rem;color:var(--text3);font-weight:400;margin-left:3px}
 
 .fest-rec{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:8px;display:inline-block}
 .rec-priority{background:rgba(134,239,172,.12);color:var(--apply)}
@@ -321,7 +323,7 @@ const FESTIVALS = [
   {name:"New Orleans Film Festival",deadline:"2026-05-29",fee:76,category:"Documentary Feature",notes:"Oscar-qualifying for shorts. Solid US regional reputation. Strong audience.",link:"https://neworleansfilmsociety.org/",status:"Not started",tier:"A",rec:"Apply"},
   {name:"Santa Fe International Film Festival",deadline:"2026-05-06",fee:58.50,category:"International Feature",notes:"⚡ DEADLINE TOMORROW. Tier B+ regional US. Oscar-qualifying for shorts only (not features). 'Young Sundance' branding.",link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",status:"Not started",tier:"B",rec:"Apply"},
   {name:"World Film Festival Kolkata (FFSI)",deadline:"2026-05-31",fee:40,category:"Documentary",notes:"Run by FFSI (Federation of Film Societies of India). Same lineage as SASFF. Real curatorial credibility.",link:"https://ffsi.org.in/world-film-festival-kolkata/",status:"Not started",tier:"B",rec:"Apply"},
-  {name:"MSDFF — Mumbai Short & Documentary Film Festival",deadline:"2026-05-05",fee:5.40,category:"Documentary Feature / Indian Documentary",notes:"⚡ DEADLINE TODAY. Excellent low-fee Indian doc fest. Social-justice section fits theme.",link:"https://filmfreeway.com/msdffest",status:"Not started",tier:"B",rec:"Apply"},
+  {name:"MSDFF — Mumbai Short & Documentary Film Festival",deadline:"2026-05-05",fee:10.80,feePerCategory:5.40,categoriesApplied:2,category:"Documentary Feature + Indian Documentary",notes:"Submitted in 2 categories. Excellent low-fee Indian doc fest. Social-justice section fits theme.",link:"https://filmfreeway.com/msdffest",status:"Submitted",tier:"B",rec:"Apply"},
   {name:"MUMBA International Film Festival",deadline:"2026-05-31",fee:43,category:"Feature Doc",notes:"Mid-tier Indian fest. Verify legitimacy before paying — check for edition history.",link:"https://mumbafilmfestival.com/",status:"Not started",tier:"C",rec:"Strategic"},
   {name:"Impact Docs Awards",deadline:"2026-05-29",fee:35,category:"Documentary Feature",notes:"⚠️ Award-mill structure — judges films online, gives laurels. Not a festival in traditional sense. Useful only for laurel padding.",link:"https://impactdocsawards.com/",status:"Not started",tier:"C",rec:"Strategic"},
   {name:"Berlin Short Film Festival",deadline:"2026-05-12",fee:54,category:"Short Documentary",notes:"Mid-tier European short fest. Verify if it's the legit Interfilm Berlin or a separate 'Berlin'-branded fest.",link:"https://www.berlinshortfilmfestival.com/",status:"Not started",tier:"C",rec:"Strategic"},
@@ -669,8 +671,8 @@ function renderCardView(list,el){
       </div>
       <div class="fest-meta">
         <span class="${dlClass}">📅 <b>${fmtDate(f.deadline)}</b>${days!==null&&days>=0&&!submitted?` (${days===0?'today':days===1?'tomorrow':days+' days'})`:days!==null&&days<0?' (passed)':''}</span>
-        <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b></span>
-        ${f.category?`<span class="fest-cat">${esc(f.category)}</span>`:''}
+        <span class="${f.fee===0?'free':''}">💰 <b>${feeStr(f.fee)}</b>${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail">(${f.categoriesApplied}× $${f.feePerCategory})</span>`:''}</span>
+        ${f.category?`<span class="fest-cat">${esc(f.category)}${f.categoriesApplied&&f.categoriesApplied>1?`<span class="cat-multi">×${f.categoriesApplied}</span>`:''}</span>`:''}
       </div>
       ${f.comments?`<div class="fest-comments"><span class="comments-icon">💬</span><div><span class="comments-label">Team comment</span><span class="comments-text">${esc(f.comments)}</span></div></div>`:''}
       ${f.notes?`<div class="fest-notes">${esc(f.notes)}</div>`:''}
@@ -707,8 +709,8 @@ function renderListView(list,el){
       <td><span class="lv-tier tier-${f.tier}">${f.tier||'?'}</span></td>
       <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`:esc(f.name)}${commentBadge}</td>
       <td class="lv-deadline ${dlClass}">${fmtDate(f.deadline)}${dlSuffix}</td>
-      <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}</td>
-      <td>${esc(f.category||'—')}</td>
+      <td class="lv-fee ${f.fee===0?'free':''}">${feeStr(f.fee)}${f.categoriesApplied&&f.categoriesApplied>1?`<span class="fee-detail"> (${f.categoriesApplied}×)</span>`:''}</td>
+      <td>${esc(f.category||'—')}${f.categoriesApplied&&f.categoriesApplied>1?` <span class="cat-multi">×${f.categoriesApplied}</span>`:''}</td>
       <td>
         <select class="lv-status" onchange="updateStatus('${esc(f.name).replace(/'/g,"&#39;")}',this.value)">
           <option ${status==='Not started'?'selected':''}>Not started</option>
