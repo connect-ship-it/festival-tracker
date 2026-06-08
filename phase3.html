@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 3 — June-Onwards Submissions | Against All Odds</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1115;--surface:#1a1d24;--surface2:#22262f;--surface3:#2d323c;
+  --border:#2d323c;--border2:#3d434f;
+  --text:#e8eaed;--text2:#9aa0ac;--text3:#6b7280;
+  --accent:#7fc67a;--accent-dim:#1f3320;--accent-bright:#9ad695;
+  --apply:#86efac;--skip:#f87171;--strategic:#fbbf24;
+  --tier-s:#c084fc;--tier-a:#86efac;--tier-b:#fbbf24;--tier-c:#9ca3af;--tier-d:#f87171;
+  --radius:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.app{max-width:1300px;margin:0 auto;padding:18px 24px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap;gap:12px}
+h1{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+h1 .sub{color:var(--accent);font-weight:400;font-size:.78rem;margin-left:8px}
+.nav-links{display:flex;gap:8px}
+.top-link{color:var(--text2);font-size:.75rem;text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:6px}
+.top-link:hover{color:var(--text);border-color:var(--border2);background:var(--surface)}
+
+/* Chatbot */
+.bot{background:linear-gradient(135deg,#1f3320 0%,#22262f 100%);border:1px solid var(--accent);border-radius:14px;margin-bottom:18px;overflow:hidden;box-shadow:0 4px 20px rgba(127,198,122,.08)}
+.bot-header{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.bot-title{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.92rem}
+.bot-icon{width:30px;height:30px;background:var(--accent);color:#0f1115;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700}
+.bot-title .pulse{display:inline-block;width:8px;height:8px;background:var(--accent-bright);border-radius:50%;margin-left:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.bot-toggle{color:var(--text2);font-size:.78rem;transition:transform .2s}
+.bot-body{padding:0 18px 16px;display:none}
+.bot.open .bot-body{display:block}
+.bot.open .bot-toggle{transform:rotate(180deg)}
+.bot-suggest{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bot-chip{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:14px;font-size:.7rem;cursor:pointer;transition:all .15s}
+.bot-chip:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+.bot-input-row{display:flex;gap:8px;margin-bottom:10px}
+.bot-input{flex:1;padding:9px 12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:8px;font-size:.82rem;outline:none}
+.bot-input:focus{border-color:var(--accent)}
+.bot-send{background:var(--accent);color:#0f1115;border:none;padding:9px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.78rem}
+.bot-send:hover{background:var(--accent-bright)}
+.bot-conversation{max-height:380px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;display:none}
+.bot-conversation.show{display:block}
+.bot-msg{margin-bottom:12px;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.bot-msg-user{text-align:right}
+.bot-msg-user .bubble{background:var(--accent);color:#0f1115;display:inline-block;padding:7px 13px;border-radius:14px 14px 0 14px;font-size:.8rem;max-width:80%;font-weight:500}
+.bot-msg-bot .bubble{background:var(--surface2);border:1px solid var(--border);padding:11px 14px;border-radius:14px 14px 14px 0;font-size:.8rem;line-height:1.5}
+.bot-msg-bot .bubble strong{color:var(--accent);font-weight:600}
+.bot-msg-bot .bubble h4{margin-top:6px;margin-bottom:3px;font-size:.84rem;color:var(--accent)}
+.bot-msg-bot .bubble ul{margin:5px 0 5px 16px}
+.bot-thinking{display:inline-block;color:var(--text3);font-style:italic;font-size:.78rem}
+.bot-thinking::after{content:'';animation:dots 1.4s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+.bot-fallback{background:var(--surface);border:1px dashed var(--border2);padding:8px 12px;border-radius:7px;font-size:.72rem;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.bot-fallback a{color:var(--accent);text-decoration:none;font-weight:600}
+.ask-claude-btn{background:#1a1d24;border:1px solid var(--accent);color:var(--accent);padding:7px 12px;border-radius:6px;font-size:.76rem;font-weight:600;cursor:pointer;margin-top:6px;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.ask-claude-btn:hover{background:var(--accent-dim)}
+.ask-claude-btn.copied{background:var(--accent);color:#0f1115}
+.ask-claude-btn .check{display:none}
+.ask-claude-btn.copied .copy-text{display:none}
+.ask-claude-btn.copied .check{display:inline}
+
+/* Money tracker */
+.money-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.money-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;gap:3px}
+.money-card.spent{border-left:3px solid var(--accent)}
+.money-card.planned{border-left:3px solid var(--strategic)}
+.money-card.budget{border-left:3px solid var(--tier-s)}
+.money-card .label{font-size:.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.money-card .amount{font-size:1.5rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.money-card .amount.green{color:var(--accent)}
+.money-card .amount.amber{color:var(--strategic)}
+.money-card .sub{font-size:.7rem;color:var(--text2)}
+
+/* 10-month calendar dashboard */
+.calendar-strip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;overflow-x:auto}
+.calendar-strip-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:10px}
+.calendar-months{display:flex;gap:8px;min-width:max-content}
+.month-cell{flex:1;min-width:110px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;position:relative}
+.month-cell:hover{border-color:var(--border2);background:var(--surface3)}
+.month-cell.active{background:var(--accent-dim);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.month-cell.past{opacity:.5}
+.month-cell.current{border-color:var(--accent-bright)}
+.month-cell .month-name{font-size:.74rem;color:var(--text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.month-cell .month-year{font-size:.6rem;color:var(--text3);margin-left:2px}
+.month-cell .month-stats{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:.72rem}
+.month-cell .month-count{color:var(--text);font-weight:700}
+.month-cell .month-count-label{font-size:.6rem;color:var(--text3);margin-left:2px}
+.month-cell .month-fee{color:var(--accent);font-weight:700;font-size:.78rem;margin-top:2px}
+.month-cell.empty .month-count,.month-cell.empty .month-fee{color:var(--text3)}
+.month-cell.current .current-dot{position:absolute;top:6px;right:8px;width:6px;height:6px;background:var(--accent-bright);border-radius:50%;animation:pulse 2s infinite}
+
+/* Filters */
+.controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search{flex:0 1 200px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.78rem;outline:none}
+.search:focus{border-color:var(--accent)}
+.chip{padding:4px 11px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-size:.7rem;font-weight:500;white-space:nowrap}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--accent);color:#0f1115;border-color:var(--accent);font-weight:600}
+.view-toggle{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2px;margin-left:auto}
+.view-toggle button{background:transparent;border:none;color:var(--text2);padding:4px 12px;font-size:.7rem;font-weight:500;cursor:pointer;border-radius:12px}
+.view-toggle button.active{background:var(--accent);color:#0f1115;font-weight:600}
+.clear-month-filter{padding:4px 10px;border-radius:14px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);font-size:.7rem;font-weight:600;cursor:pointer}
+
+/* Cards */
+.fests{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+.fest-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:all .15s;display:flex;flex-direction:column;gap:8px;border-left:3px solid var(--border)}
+.fest-card:hover{border-color:var(--border2)}
+.fest-card.tier-S{border-left-color:var(--tier-s)}
+.fest-card.tier-A{border-left-color:var(--tier-a)}
+.fest-card.tier-B{border-left-color:var(--tier-b)}
+.fest-card.tier-C{border-left-color:var(--tier-c)}
+.fest-card.tier-D{border-left-color:var(--tier-d)}
+.fest-card.applied{opacity:.7;background:var(--surface2)}
+.fest-card.applied .fest-name{text-decoration:line-through;color:var(--text2)}
+
+.fest-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.fest-name{font-size:.95rem;font-weight:600;line-height:1.3;flex:1;min-width:0}
+.fest-name a{color:inherit;text-decoration:none}
+.fest-name a:hover{color:var(--accent)}
+.tier-pill{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;white-space:nowrap}
+.tier-pill.tier-S{background:rgba(192,132,252,.15);color:var(--tier-s)}
+.tier-pill.tier-A{background:rgba(134,239,172,.15);color:var(--tier-a)}
+.tier-pill.tier-B{background:rgba(251,191,36,.15);color:var(--tier-b)}
+.tier-pill.tier-C{background:rgba(156,163,175,.15);color:var(--tier-c)}
+.tier-pill.tier-D{background:rgba(248,113,113,.15);color:var(--tier-d)}
+
+.fest-meta{display:flex;gap:14px;font-size:.74rem;color:var(--text2);flex-wrap:wrap;align-items:center}
+.fest-meta b{color:var(--text);font-weight:600}
+.fest-meta .deadline-near b{color:var(--skip)}
+.fest-meta .deadline-soon b{color:var(--strategic)}
+.fest-meta .free b{color:var(--accent)}
+.deadline-select{padding:2px 6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:4px;font-size:.7rem;cursor:pointer;outline:none;font-weight:500;max-width:240px}
+.deadline-select option{background:var(--surface);color:var(--text)}
+
+.fest-actions{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.status-select{padding:4px 8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:5px;font-size:.72rem;cursor:pointer;outline:none}
+.apply-btn{background:var(--accent);color:#0f1115;padding:5px 12px;border-radius:5px;text-decoration:none;font-size:.72rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;margin-left:auto}
+.apply-btn:hover{background:var(--accent-bright)}
+.apply-btn.disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;pointer-events:none}
+.copy-btn{background:transparent;color:var(--text3);padding:4px 7px;border-radius:4px;border:1px solid var(--border2);font-size:.66rem;cursor:pointer}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+.copy-btn.done{background:var(--accent);color:#0f1115;border-color:var(--accent)}
+
+/* List view */
+.fests.list-view{display:block}
+.fests.list-view .list-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:.78rem}
+.fests.list-view th{background:var(--surface2);text-align:left;padding:10px 12px;font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);border-bottom:1px solid var(--border2);white-space:nowrap}
+.fests.list-view td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.fests.list-view tbody tr:hover{background:var(--surface2)}
+.fests.list-view tbody tr:last-child td{border-bottom:none}
+.fests.list-view tbody tr.applied-row{opacity:.55}
+.fests.list-view tbody tr.applied-row .lv-name{text-decoration:line-through}
+.lv-tier{display:inline-block;width:22px;height:22px;line-height:18px;text-align:center;font-size:.65rem;font-weight:700;border-radius:4px;border:2px solid}
+.lv-tier.tier-S{color:var(--tier-s);border-color:var(--tier-s);background:rgba(192,132,252,.1)}
+.lv-tier.tier-A{color:var(--tier-a);border-color:var(--tier-a);background:rgba(134,239,172,.1)}
+.lv-tier.tier-B{color:var(--tier-b);border-color:var(--tier-b);background:rgba(251,191,36,.1)}
+.lv-tier.tier-C{color:var(--tier-c);border-color:var(--tier-c);background:rgba(156,163,175,.1)}
+.lv-tier.tier-D{color:var(--tier-d);border-color:var(--tier-d);background:rgba(248,113,113,.1)}
+.lv-name{font-weight:600;color:var(--text);max-width:280px}
+.lv-name a{color:inherit;text-decoration:none}
+.lv-name a:hover{color:var(--accent)}
+.lv-deadline{font-weight:500;white-space:nowrap}
+.lv-deadline.deadline-near{color:var(--skip);font-weight:700}
+.lv-deadline.deadline-soon{color:var(--strategic);font-weight:600}
+.lv-deadline.deadline-passed{color:var(--text3);text-decoration:line-through}
+.lv-fee{font-weight:600;color:var(--text);white-space:nowrap}
+.lv-fee.free{color:var(--accent)}
+.lv-actions{white-space:nowrap;display:inline-flex;gap:4px;align-items:center}
+.lv-status{padding:3px 6px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;font-size:.7rem;cursor:pointer;outline:none}
+
+.empty{text-align:center;padding:40px;color:var(--text2)}
+@media(max-width:700px){.fests{grid-template-columns:1fr}.app{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Phase 3 Tracker<span class="sub">Against All Odds &bull; June 2026 onwards</span></h1>
+    <div class="nav-links">
+      <a href="may.html" class="top-link">May Tracker</a>
+      <a href="v2.html" class="top-link">National v2</a>
+      <a href="index.html" class="top-link">Full tracker (v1)</a>
+    </div>
+  </header>
+
+  <!-- Festival Assistant Bot -->
+  <div class="bot" id="bot">
+    <div class="bot-header" onclick="document.getElementById('bot').classList.toggle('open')">
+      <div class="bot-title">
+        <div class="bot-icon">F</div>
+        <span>Festival Assistant<span class="pulse"></span></span>
+        <span style="color:var(--text3);font-size:.7rem;font-weight:400">— ask anything</span>
+      </div>
+      <span class="bot-toggle">▼</span>
+    </div>
+    <div class="bot-body">
+      <div class="bot-suggest">
+        <span class="bot-chip" data-q="What is World Premiere status and why does it matter?">What is World Premiere?</span>
+        <span class="bot-chip" data-q="How to spot a vanity festival?">Spot vanity festivals</span>
+        <span class="bot-chip" data-q="Tell me about IDFA">About IDFA</span>
+        <span class="bot-chip" data-q="What festivals are Oscar qualifying?">Oscar-qualifying fests</span>
+        <span class="bot-chip" data-q="Tell me about Ji.hlava">About Ji.hlava</span>
+        <span class="bot-chip" data-q="Tell me about DOC NYC">About DOC NYC</span>
+        <span class="bot-chip" data-q="Tell me about RIDM Montreal">About RIDM</span>
+        <span class="bot-chip" data-q="Tell me about Tasveer">About Tasveer</span>
+      </div>
+      <div class="bot-conversation" id="botConv"></div>
+      <div class="bot-input-row">
+        <input class="bot-input" id="botInput" placeholder="Paste FilmFreeway URL or ask about a festival..." onkeydown="if(event.key==='Enter')askBot()">
+        <button class="bot-send" onclick="askBot()">Ask</button>
+      </div>
+      <div class="bot-fallback">
+        <span>Paste any FilmFreeway URL above — bot extracts festival name + checks our research.</span>
+        <a href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Money tracker -->
+  <div class="money-row" id="moneyRow"></div>
+
+  <!-- 10-month deadline calendar -->
+  <div class="calendar-strip">
+    <div class="calendar-strip-label">Next 10 Months — click a month to filter</div>
+    <div class="calendar-months" id="calendarMonths"></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="controls">
+    <input class="search" id="searchInput" placeholder="Search festival...">
+    <div class="chip active" data-filter="all">All</div>
+    <div class="chip" data-filter="notapplied">Not Applied</div>
+    <div class="chip" data-filter="applied">Applied</div>
+    <div class="chip" data-filter="tierS">Tier S</div>
+    <div class="chip" data-filter="tierA">Tier A</div>
+    <div class="chip" data-filter="urgent">⚡ Urgent (≤7d)</div>
+    <span id="monthFilterIndicator" style="display:none"></span>
+    <div class="view-toggle">
+      <button id="viewBlock" class="active" onclick="setView('block')">▦ Blocks</button>
+      <button id="viewList" onclick="setView('list')">☰ List</button>
+    </div>
+  </div>
+
+  <div class="fests" id="festsList"></div>
+</div>
+
+<script>
+// ============= PHASE 3 FESTIVAL DATA =============
+const FESTIVALS = [
+  {name:"Raindance Festival",deadlines:[{label:"Standard",date:"2026-03-08",fee:41.83}],link:"https://filmfreeway.com/Raindance",tier:"A",notes:"⚠️ Deadline passed (Mar 8). UK prestigious indie fest, BAFTA-qualifying. Watch next cycle."},
+  {name:"Rhode Island International Film Festival",deadlines:[{label:"Regular",date:"2026-06-15",fee:75}],link:"https://filmfreeway.com/RIFilmFest",tier:"B",notes:"Oscar-qualifying for shorts. Real US regional."},
+  {name:"New Orleans Film Festival",deadlines:[{label:"Final",date:"2026-05-29",fee:67}],link:"https://filmfreeway.com/NewOrleansFilmFestival",tier:"A",notes:"Oscar-qualifying for shorts. Strong Southern US reputation."},
+  {name:"Hot Springs Documentary Film Festival",deadlines:[{label:"Early",date:"2026-06-15",fee:54},{label:"Regular",date:"2026-06-18",fee:63}],link:"https://filmfreeway.com/HotSpringsDocumentaryFilmFestival",tier:"A",notes:"Oscar-qualifying for shorts. Oldest US doc fest (since 1992). Doc-only focus — strong fit for short doc."},
+  {name:"DOC NYC",deadlines:[{label:"Standard",date:"2026-06-18",fee:71}],link:"https://filmfreeway.com/DOCNYC",tier:"S",notes:"🏆 Largest US doc-only fest. Oscar-qualifying. Premiere-flexible. Tier-S target."},
+  {name:"Cork Film Festival",deadlines:[{label:"Standard",date:"2026-07-31",fee:31.50}],link:"https://filmfreeway.com/CorkFilmFestival",tier:"A",notes:"Ireland's oldest. Oscar-qualifying for shorts. Real European credential."},
+  {name:"Nashville Film Festival",deadlines:[{label:"Standard",date:"2026-06-15",fee:72}],link:"https://filmfreeway.com/NashFilm",tier:"A",notes:"Oscar-qualifying for shorts. Solid mid-major US."},
+  {name:"Austin Film Festival",deadlines:[{label:"TBD",date:null,fee:null}],link:"https://filmfreeway.com/AustinFilmFestival",tier:"B",notes:"Strong US fest. Writer/story-focused — story-driven docs fit. Deadline & fee to be confirmed."},
+  {name:"RIDM — Montreal International Documentary Festival",deadlines:[{label:"Standard",date:"2026-06-15",fee:77}],link:"https://filmfreeway.com/RIDM",tier:"S",notes:"🏆 Tier-S doc-only Canadian fest. Real prestige."},
+  {name:"Ji.hlava International Documentary Film Festival",deadlines:[{label:"Rough Cut",date:"2026-06-30",fee:null}],link:"https://www.ji-hlava.com/",tier:"S",notes:"🏆 Tier-S European doc fest. Rough-cut submission policy — won't burn premiere. Submit direct."},
+  {name:"St. Louis International Film Festival",deadlines:[{label:"Standard",date:"2026-07-13",fee:58}],link:"https://filmfreeway.com/StLouisInternationalFilmFestival",tier:"B",notes:"Oscar-qualifying for shorts. Real US fest."},
+  {name:"Chicago International Film Festival",deadlines:[{label:"Standard",date:"2026-06-30",fee:63}],link:"https://www.chicagofilmfestival.com/festival",tier:"A",notes:"🏆 60+ years. Oscar-qualifying for shorts. The real Chicago fest. Submit direct."},
+  {name:"Tasveer South Asian Film Festival",deadlines:[{label:"Standard",date:"2026-07-05",fee:50}],link:"https://filmfreeway.com/TSAFF",tier:"A",notes:"⭐ Perfect cultural fit for Indian doc. South Asian eligibility = high selection odds."},
+  {name:"India Cine Film Festival (ICFF) — Miniboxoffice",deadlines:[{label:"Standard",date:"2026-06-26",fee:187.50}],link:"https://filmfreeway.com/IndianCineFilmFestival",tier:"D",notes:"🚫 Miniboxoffice. Highest-priced commercial fest. Skip."},
+  {name:"IWFF — Indian World Film Festival",deadlines:[{label:"Standard",date:"2026-06-10",fee:216.84}],link:"https://filmfreeway.com/Indian-World-Film-Festival",tier:"D",notes:"🚫 Miniboxoffice. Commercial. Skip."},
+  {name:"Annual Aarhus Film Festival",deadlines:[{label:"Standard",date:"2026-06-28",fee:29.75}],link:"https://filmfreeway.com/AnnualAarhusFilmFestival",tier:"C",notes:"Mid-tier Danish festival. Vet doc section before paying."},
+  {name:"India Movie Awards",deadlines:[{label:"Standard",date:"2026-06-16",fee:12}],link:"https://filmfreeway.com/INDIANMOVIEAWARDS",tier:"D",notes:"🚫 Pure vanity. Mimics Filmfare. Skip."},
+  {name:"The Venice Film Week",deadlines:[{label:"Standard",date:"2026-06-26",fee:49.50}],link:"https://filmfreeway.com/VeniceFilmWeek",tier:"C",notes:"⚠️ Not Venice Biennale — name piggyback. Vet before paying."},
+  {name:"Venice Shorts",deadlines:[{label:"Standard",date:"2026-06-23",fee:40}],link:"https://filmfreeway.com/Veniceshorts",tier:"C",notes:"⚠️ Not Venice Biennale — different from Venice Film Week. Vet."},
+  {name:"KSIFF-26 (15th Kolkata Shorts International Film Festival)",deadlines:[{label:"Standard",date:"2026-06-17",fee:127.56}],link:"https://filmfreeway.com/kolkatashortsinternationalfilmfestival",tier:"D",notes:"🚫 Miniboxoffice. Commercial. Skip."},
+  {name:"The Noida International Film Festival (NIFF)",deadlines:[{label:"Standard",date:"2026-06-20",fee:186.88}],link:"https://filmfreeway.com/NoidaInternationalFilmFestival",tier:"D",notes:"🚫 Miniboxoffice. Commercial. Skip."},
+  {name:"Impact Docs Awards (Online Awards)",deadlines:[{label:"Standard",date:"2026-06-19",fee:40}],link:"https://filmfreeway.com/TheImpactDOCSAwards",tier:"D",notes:"🚫 Online award mill. No festival, no screening. Skip."},
+  {name:"Newport Beach Film Festival",deadlines:[{label:"Standard",date:"2026-06-26",fee:75}],link:"https://filmfreeway.com/NewportBeachFilmFestival",tier:"B",notes:"Real US regional. Solid mid-tier credential."},
+  {name:"MUMBA International Film Festival",deadlines:[{label:"Standard",date:"2026-07-31",fee:38.60}],link:"https://filmfreeway.com/mumbafilmfestival",tier:"D",notes:"🚫 Vanity piggyback — actually in Pune, not Mumbai. Auto-nomination scam. Skip."},
+  {name:"MSIFF — 15th Mumbai International Short Film Festival",deadlines:[{label:"Standard",date:"2026-06-12",fee:116.40}],link:"https://filmfreeway.com/mumbaishortsinternationalfilmfestival",tier:"D",notes:"🚫 Miniboxoffice. Commercial. Skip."},
+  {name:"Santa Fe International Film Festival",deadlines:[{label:"Late",date:"2026-07-09",fee:67.50}],link:"https://filmfreeway.com/SantaFeInternationalFilmFestival",tier:"B",notes:"US regional. 'Young Sundance' branding. Oscar-qualifying for shorts only."},
+  {name:"Berlin Short Film Festival",deadlines:[{label:"Standard",date:"2026-06-09",fee:58.50}],link:"https://filmfreeway.com/BerlinShortFilmFestival",tier:"C",notes:"⚠️ Verify legitimacy — multiple 'Berlin' shorts fests exist. Vet before paying."}
+];
+
+// ============= CHATBOT KB =============
+const KB = {
+  festivals: {
+    'idfa':{content:'<h4>IDFA — World #1 Doc Festival</h4>Tier S. World\'s most competitive and prestigious doc festival. For your 39:49 SHORT cut → <strong>IDFA Competition for Short Documentary</strong> (competitive, award-eligible, potentially Oscar-qualifying).'},
+    'doc nyc':{content:'<h4>DOC NYC</h4><strong>Tier S.</strong> Largest US doc-only fest. Oscar-qualifying. Premiere-flexible. The single highest-value Phase 3 submission for your film.'},
+    'docnyc':{content:'<h4>DOC NYC</h4><strong>Tier S.</strong> Largest US doc-only fest. Oscar-qualifying. Premiere-flexible.'},
+    'ridm':{content:'<h4>RIDM — Montreal Int\'l Doc Festival</h4><strong>Tier S Canadian doc-only fest.</strong> Real curation, francophone + international reach. Strong CV credential.'},
+    'ji.hlava':{content:'<h4>Ji.hlava IDFF — Czech Republic</h4><strong>Tier S European.</strong> Central Europe\'s top doc fest. <strong>Rough-cut submission policy</strong> = won\'t burn premiere. Submit direct via ji-hlava.com (not FilmFreeway).'},
+    'jihlava':{content:'<h4>Ji.hlava IDFF — Czech Republic</h4><strong>Tier S European.</strong> Rough-cut policy = won\'t burn premiere.'},
+    'hot springs':{content:'<h4>Hot Springs Documentary Film Festival</h4><strong>Tier A.</strong> Oscar-qualifying for shorts. <strong>Oldest US doc fest (since 1992).</strong> Doc-only focus — strong fit for your short doc.'},
+    'chicago':{content:'<h4>Chicago International Film Festival</h4><strong>Tier A.</strong> 60+ years. Oscar-qualifying for shorts. The real Chicago fest (not vanity "Chicago Shorts"). Submit direct via chicagofilmfestival.com.'},
+    'cork':{content:'<h4>Cork Film Festival — Ireland</h4><strong>Tier A.</strong> Ireland\'s oldest fest. Oscar-qualifying for shorts. Real European credential.'},
+    'tasveer':{content:'<h4>Tasveer South Asian Film Festival</h4><strong>Tier A — perfect cultural fit for your Indian doc.</strong> Seattle-based. South Asian eligibility = smaller pool + higher selection odds. Excellent Phase 3 submission.'},
+    'nashville':{content:'<h4>Nashville Film Festival</h4><strong>Tier A.</strong> Oscar-qualifying for shorts. Solid mid-major US.'},
+    'new orleans':{content:'<h4>New Orleans Film Festival</h4><strong>Tier A.</strong> Oscar-qualifying for shorts. Strong Southern US reputation. With your SHORT cut, now Oscar-relevant.'},
+    'rhode island':{content:'<h4>Rhode Island International Film Festival</h4><strong>Tier B.</strong> Oscar-qualifying for shorts. Real US regional.'},
+    'st. louis':{content:'<h4>St. Louis International Film Festival</h4><strong>Tier B.</strong> Oscar-qualifying for shorts.'},
+    'st louis':{content:'<h4>St. Louis International Film Festival</h4><strong>Tier B.</strong> Oscar-qualifying for shorts.'},
+    'austin':{content:'<h4>Austin Film Festival</h4><strong>Tier B.</strong> Strong US fest. Writer/story-focused — your character-driven doc fits.'},
+    'newport beach':{content:'<h4>Newport Beach Film Festival</h4><strong>Tier B.</strong> Real US regional. Solid mid-tier credential.'},
+    'santa fe':{content:'<h4>Santa Fe International Film Festival</h4><strong>Tier B.</strong> "Young Sundance" branding. Oscar-qualifying for shorts only.'},
+    'raindance':{content:'<h4>Raindance Festival</h4><strong>Tier A UK indie.</strong> BAFTA-qualifying. ⚠️ March deadline likely passed. Watch next cycle.'},
+    'aarhus':{content:'<h4>Annual Aarhus Film Festival</h4><strong>Tier C Danish.</strong> Mid-tier. Vet doc section before paying.'},
+    'venice film week':{content:'<h4>Venice Film Week</h4><strong>⚠️ Tier C.</strong> NOT Venice Biennale — name piggyback. Vet carefully.'},
+    'venice shorts':{content:'<h4>Venice Shorts</h4><strong>⚠️ Tier C.</strong> NOT Venice Biennale. Different operation from Venice Film Week. Vet.'},
+    'berlin short':{content:'<h4>Berlin Short Film Festival</h4><strong>⚠️ Tier C.</strong> Multiple "Berlin" shorts fests exist. Verify legitimacy before paying.'},
+    'india cine':{content:'<h4>India Cine Film Festival (ICFF)</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Highest-priced fest in their commercial network. Skip.'},
+    'iwff':{content:'<h4>IWFF — Indian World Film Festival</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Commercial operation. Skip.'},
+    'india movie awards':{content:'<h4>India Movie Awards</h4><strong>🚫 Tier D — Pure vanity.</strong> Mimics Filmfare brand. Hard skip.'},
+    'ksiff':{content:'<h4>KSIFF Kolkata Shorts</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Commercial. Skip.'},
+    'noida':{content:'<h4>The Noida International Film Festival (NIFF)</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Commercial. Skip.'},
+    'niff':{content:'<h4>The Noida International Film Festival (NIFF)</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Commercial. Skip.'},
+    'impact docs':{content:'<h4>Impact Docs Awards</h4><strong>🚫 Tier C/D — Online award mill.</strong> No festival, no screening. Skip.'},
+    'mumba':{content:'<h4>MUMBA International Film Festival</h4><strong>🚫 Tier D — Vanity piggyback.</strong> Actually in Pune, not Mumbai. Auto-nomination scam. Skip.'},
+    'msiff':{content:'<h4>MSIFF Mumbai Shorts</h4><strong>🚫 Tier D — Miniboxoffice.</strong> Commercial. Skip.'}
+  },
+  topics:[
+    {keys:['world premiere','premiere status'],content:'<h4>World Premiere</h4><strong>World Premiere = your most valuable asset.</strong> Once any festival screens your film publicly, it\'s gone. Protect WP for Tier-S fests (IDFA, Hot Docs, Sundance). Most of Phase 3 (DOC NYC, Hot Springs, RIDM, Chicago) is premiere-flexible — safe to apply post-IDFA.'},
+    {keys:['vanity','spot vanity','red flags'],content:'<h4>Spot a Vanity Festival</h4>7-point checklist:<ul><li>Multi-year archive?</li><li>Named jury with verifiable industry figures?</li><li>Fixed annual event at known venue?</li><li>Coverage in Variety / IndieWire?</li><li>Escalating fee structure?</li><li>Selective acceptance (most rejected)?</li><li>Tight curated category list?</li></ul>Score 0-2 = vanity. 3-4 = commercial-tier. 5+ = legitimate.'},
+    {keys:['oscar','academy','qualifying'],content:'<h4>Oscar-Qualifying for Documentary Short</h4>From your Phase 3 list, all OSCAR-QUALIFYING (Documentary Short) festivals:<ul><li><strong>DOC NYC</strong></li><li><strong>Hot Springs Documentary Film Festival</strong></li><li><strong>Chicago International Film Festival</strong></li><li><strong>Cork Film Festival (Ireland)</strong></li><li><strong>Nashville Film Festival</strong></li><li><strong>St. Louis International</strong></li><li><strong>Rhode Island International</strong></li><li><strong>New Orleans Film Festival</strong></li></ul>Win Best Documentary Short at any of these → automatic Academy Awards consideration.'}
+  ]
+};
+
+// ============= STATE & HELPERS =============
+const STORAGE_KEY='aao_phase3';
+const VIEW_KEY='aao_phase3_view';
+const MONTH_FILTER_KEY='aao_phase3_month';
+const today=new Date(); today.setHours(0,0,0,0);
+
+let currentFilter='all', searchTerm='', currentView=localStorage.getItem(VIEW_KEY)||'block';
+let monthFilter=null;
+
+function loadStatus(){return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}
+function saveStatus(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s))}
+function setStatus(name,status){const s=loadStatus();s[name]=status;saveStatus(s)}
+function getStatus(name){return loadStatus()[name]||'Not applied'}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(d){if(!d)return 'TBD';const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function daysUntil(d){if(!d)return null;const dt=new Date(d);dt.setHours(0,0,0,0);return Math.round((dt-today)/(1000*60*60*24))}
+function feeStr(f){if(f===null||f===undefined)return 'TBC';if(f===0)return 'Free';return '$'+(Number.isInteger(f)?f:f.toFixed(2))}
+
+function getActiveDeadline(f){
+  if(!f.deadlines||!f.deadlines.length) return {label:'',date:null,fee:null,idx:-1};
+  const stored=localStorage.getItem('aao_phase3_dl_'+f.name);
+  if(stored!==null && f.deadlines[parseInt(stored)]) return {...f.deadlines[parseInt(stored)],idx:parseInt(stored)};
+  let pickIdx=f.deadlines.findIndex(d=>{if(!d.date)return false;const dt=new Date(d.date);dt.setHours(0,0,0,0);return dt>=today});
+  if(pickIdx===-1) pickIdx=f.deadlines.length-1;
+  return {...f.deadlines[pickIdx],idx:pickIdx};
+}
+function setDeadlineSel(name,idx){localStorage.setItem('aao_phase3_dl_'+name,String(idx))}
+
+// ============= CHATBOT =============
+function isUrl(s){return /^https?:\/\//.test(s.trim())||/^www\./.test(s.trim())}
+function extractFestNameFromUrl(url){
+  try{
+    const u=new URL(url.startsWith('http')?url:'https://'+url);
+    let path=u.pathname.replace(/^\/+/,'').replace(/\/.*$/,'').split('?')[0];
+    return path.replace(/-/g,' ').replace(/([A-Z])/g,' $1').trim().replace(/\s+/g,' ');
+  }catch(e){return ''}
+}
+function findKBMatch(query){
+  let q=query.toLowerCase().trim();
+  if(isUrl(q)){const name=extractFestNameFromUrl(q);if(name)q=q+' '+name.toLowerCase()}
+  for(const[k,v] of Object.entries(KB.festivals)){if(q.includes(k))return v.content}
+  for(const t of KB.topics){if(t.keys.some(k=>q.includes(k)))return t.content}
+  return null;
+}
+function buildClaudePrompt(query){
+  const isUrlQ=isUrl(query);
+  const name=isUrlQ?extractFestNameFromUrl(query):query;
+  if(isUrlQ){
+    return `I'm evaluating this film festival for my documentary "Against All Odds" — a short doc (39:49) about software founders from non-metro Indian districts.\n\nFestival URL: ${query}\nLikely name: ${name}\n\nPlease assess: legitimacy, tier (S/A/B/C/D), Oscar-qualifying status, premiere requirements, fit for an Indian short doc, recommendation. Be honest and direct.`;
+  }
+  return `Re my documentary "Against All Odds" (39:49 short doc, Indian, software founders, Shifu Foundation):\n\n${query}\n\nGive me a direct, honest answer.`;
+}
+function copyToClipboard(t){return navigator.clipboard.writeText(t).catch(()=>{const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el)})}
+window.askClaudeWith=function(btn,prompt){copyToClipboard(prompt).then(()=>{btn.classList.add('copied');setTimeout(()=>window.open('https://claude.ai/new','_blank','noopener'),300);setTimeout(()=>btn.classList.remove('copied'),3000)})};
+function appendMsg(role,content){const conv=document.getElementById('botConv');conv.classList.add('show');const div=document.createElement('div');div.className='bot-msg bot-msg-'+role;div.innerHTML=`<div class="bubble">${content}</div>`;conv.appendChild(div);conv.scrollTop=conv.scrollHeight;return div}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function askBot(qOverride){
+  const input=document.getElementById('botInput');
+  const q=qOverride||input.value.trim();
+  if(!q)return;
+  appendMsg('user',escHtml(isUrl(q)?(q.length>60?q.slice(0,60)+'…':q):q));
+  input.value='';
+  const thinking=appendMsg('bot','<span class="bot-thinking">Searching</span>');
+  setTimeout(()=>{
+    const ans=findKBMatch(q);
+    if(ans){
+      let prefix='';
+      if(isUrl(q)){const n=extractFestNameFromUrl(q);prefix=`<div style="font-size:.7rem;color:var(--text3);margin-bottom:6px">🔍 ${escHtml(n)}</div>`}
+      thinking.querySelector('.bubble').innerHTML=prefix+ans;
+    } else {
+      const prompt=buildClaudePrompt(q);
+      thinking.querySelector('.bubble').innerHTML=`<strong>Not in my knowledge base yet.</strong><br><br>I've prepared a Claude prompt with full context. Click below to copy it and open Claude. Paste with Cmd+V.<br><button class="ask-claude-btn" onclick="askClaudeWith(this,this.dataset.p)" data-p="${escHtml(prompt)}"><span class="copy-text">📋 Copy & open Claude</span><span class="check">✓ Copied! Opening Claude...</span></button>`;
+    }
+  },300);
+}
+document.querySelectorAll('.bot-chip').forEach(c=>c.addEventListener('click',()=>askBot(c.dataset.q)));
+
+// ============= VIEW TOGGLE =============
+function setView(v){currentView=v;localStorage.setItem(VIEW_KEY,v);document.getElementById('viewBlock').classList.toggle('active',v==='block');document.getElementById('viewList').classList.toggle('active',v==='list');render()}
+
+// ============= MONEY TRACKER =============
+function renderMoney(){
+  const feeOf=f=>{const dl=getActiveDeadline(f);return dl.fee||0};
+  const isApplied=f=>{const s=getStatus(f.name);return s==='Applied'||s==='Selected'||s==='Rejected'};
+  const isSkipped=f=>getStatus(f.name)==='Skipped';
+
+  const spent=FESTIVALS.filter(isApplied).reduce((s,f)=>s+feeOf(f),0);
+  const planned=FESTIVALS.filter(f=>!isApplied(f)&&!isSkipped(f)).reduce((s,f)=>s+feeOf(f),0);
+  const total=spent+planned;
+
+  const spentCount=FESTIVALS.filter(isApplied).length;
+  const plannedCount=FESTIVALS.filter(f=>!isApplied(f)&&!isSkipped(f)).length;
+
+  document.getElementById('moneyRow').innerHTML=`
+    <div class="money-card spent">
+      <div class="label">Spent so far</div>
+      <div class="amount green">$${spent.toFixed(2)}</div>
+      <div class="sub">${spentCount} festival${spentCount!==1?'s':''} applied</div>
+    </div>
+    <div class="money-card planned">
+      <div class="label">Yet to spend</div>
+      <div class="amount amber">$${planned.toFixed(2)}</div>
+      <div class="sub">${plannedCount} pending</div>
+    </div>
+    <div class="money-card budget">
+      <div class="label">Total Phase 3 budget</div>
+      <div class="amount">$${total.toFixed(2)}</div>
+      <div class="sub">Spent + Planned (excl. skipped)</div>
+    </div>`;
+}
+
+// ============= CALENDAR DASHBOARD =============
+function renderCalendar(){
+  const months=[];
+  const start=new Date(today.getFullYear(),today.getMonth(),1);
+  for(let i=0;i<10;i++){
+    const m=new Date(start.getFullYear(),start.getMonth()+i,1);
+    months.push(m);
+  }
+
+  const currentMonthKey=`${today.getFullYear()}-${today.getMonth()}`;
+
+  document.getElementById('calendarMonths').innerHTML=months.map(m=>{
+    const yr=m.getFullYear(), mo=m.getMonth();
+    const mKey=`${yr}-${mo}`;
+    // Find festivals with active deadline in this month
+    const inMonth=FESTIVALS.filter(f=>{
+      const dl=getActiveDeadline(f);
+      if(!dl.date)return false;
+      const dt=new Date(dl.date);
+      return dt.getFullYear()===yr && dt.getMonth()===mo;
+    });
+    const totalFee=inMonth.reduce((s,f)=>{const dl=getActiveDeadline(f);return s+(dl.fee||0)},0);
+    const isCurrent=mKey===currentMonthKey;
+    const isPast=m<new Date(today.getFullYear(),today.getMonth(),1);
+    const isActive=monthFilter===mKey;
+    const monthName=m.toLocaleDateString('en-GB',{month:'short'});
+    const monthYear=m.getFullYear()%100;
+    return `<div class="month-cell ${inMonth.length===0?'empty':''} ${isCurrent?'current':''} ${isPast?'past':''} ${isActive?'active':''}" onclick="toggleMonthFilter('${mKey}')">
+      ${isCurrent?'<span class="current-dot"></span>':''}
+      <div><span class="month-name">${monthName}</span><span class="month-year">'${monthYear}</span></div>
+      <div class="month-stats">
+        <span><span class="month-count">${inMonth.length}</span><span class="month-count-label">${inMonth.length===1?'fest':'fests'}</span></span>
+      </div>
+      <div class="month-fee">${totalFee>0?'$'+totalFee.toFixed(0):'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMonthFilter(mKey){
+  monthFilter=monthFilter===mKey?null:mKey;
+  document.getElementById('monthFilterIndicator').style.display=monthFilter?'inline-flex':'none';
+  if(monthFilter){
+    const[y,m]=monthFilter.split('-').map(Number);
+    const monthName=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    document.getElementById('monthFilterIndicator').innerHTML=`<span class="clear-month-filter" onclick="toggleMonthFilter('${monthFilter}')">${monthName} ✕</span>`;
+  }
+  renderCalendar();
+  render();
+}
+
+// ============= RENDER =============
+function render(){
+  let list=FESTIVALS.slice();
+  if(searchTerm){const t=searchTerm.toLowerCase();list=list.filter(f=>f.name.toLowerCase().includes(t))}
+
+  if(currentFilter!=='all'){
+    list=list.filter(f=>{
+      const status=getStatus(f.name);
+      if(currentFilter==='notapplied')return status==='Not applied';
+      if(currentFilter==='applied')return status==='Applied'||status==='Selected'||status==='Rejected';
+      if(currentFilter==='tierS')return f.tier==='S';
+      if(currentFilter==='tierA')return f.tier==='A';
+      if(currentFilter==='urgent'){const dl=getActiveDeadline(f);const d=daysUntil(dl.date);return d!==null&&d>=0&&d<=7&&status==='Not applied'}
+      return true;
+    });
+  }
+
+  if(monthFilter){
+    const[y,m]=monthFilter.split('-').map(Number);
+    list=list.filter(f=>{const dl=getActiveDeadline(f);if(!dl.date)return false;const dt=new Date(dl.date);return dt.getFullYear()===y && dt.getMonth()===m});
+  }
+
+  // Sort by active deadline
+  list.sort((a,b)=>{
+    const da=getActiveDeadline(a).date, db=getActiveDeadline(b).date;
+    const ta=da?new Date(da).getTime():Infinity, tb=db?new Date(db).getTime():Infinity;
+    return ta-tb;
+  });
+
+  const el=document.getElementById('festsList');
+  el.classList.toggle('list-view',currentView==='list');
+  if(!list.length){el.innerHTML='<div class="empty">No festivals match.</div>';return}
+
+  if(currentView==='list')renderListView(list,el);
+  else renderBlockView(list,el);
+}
+
+function renderBlockView(list,el){
+  el.innerHTML=list.map(f=>{
+    const status=getStatus(f.name);
+    const isAppliedStatus=status==='Applied'||status==='Selected'||status==='Rejected';
+    const dl=getActiveDeadline(f);
+    const days=daysUntil(dl.date);
+    let dlClass='';
+    if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
+    const safeUrl=(f.link||'').replace(/"/g,'&quot;');
+    const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+    const safeName=esc(f.name).replace(/'/g,"&#39;");
+
+    let dlDropdown='';
+    if(f.deadlines&&f.deadlines.length>1){
+      const opts=f.deadlines.map((d,i)=>{
+        const dt=d.date?new Date(d.date):null;
+        if(dt) dt.setHours(0,0,0,0);
+        const passed=dt&&dt<today;
+        const feeLbl=d.fee==null?'TBC':d.fee===0?'Free':'$'+(Number.isInteger(d.fee)?d.fee:d.fee.toFixed(2));
+        return `<option value="${i}" ${i===dl.idx?'selected':''}>${esc(d.label)}: ${fmtDate(d.date)} • ${feeLbl}${passed?' (passed)':''}</option>`;
+      }).join('');
+      dlDropdown=`<div style="font-size:.7rem;color:var(--text3);display:flex;align-items:center;gap:6px;margin-top:2px"><span>Tier:</span><select class="deadline-select" onchange="updateDl('${safeName}',this.value)">${opts}</select></div>`;
+    }
+
+    return `<div class="fest-card tier-${f.tier} ${isAppliedStatus?'applied':''}">
+      <div class="fest-top">
+        <div class="fest-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener">${esc(f.name)}</a>`:esc(f.name)}</div>
+        <span class="tier-pill tier-${f.tier}">Tier ${f.tier}</span>
+      </div>
+      <div class="fest-meta">
+        <span class="${dlClass}">📅 <b>${fmtDate(dl.date)}</b>${days!==null&&days>=0&&!isAppliedStatus?` (${days===0?'today':days===1?'tomorrow':days+'d'})`:days!==null&&days<0?' (passed)':''}</span>
+        <span class="${dl.fee===0?'free':''}">💰 <b>${feeStr(dl.fee)}</b></span>
+      </div>
+      ${dlDropdown}
+      ${f.notes?`<div style="font-size:.72rem;color:var(--text2);font-style:italic;line-height:1.4;padding:6px 8px;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border2)">${esc(f.notes)}</div>`:''}
+      <div class="fest-actions">
+        <select class="status-select" onchange="updateStatus('${safeName}',this.value)">
+          <option ${status==='Not applied'?'selected':''}>Not applied</option>
+          <option ${status==='Applied'?'selected':''}>Applied</option>
+          <option ${status==='Selected'?'selected':''}>Selected</option>
+          <option ${status==='Rejected'?'selected':''}>Rejected</option>
+          <option ${status==='Skipped'?'selected':''}>Skipped</option>
+        </select>
+        ${f.link?`<button class="copy-btn" onclick="copyUrl(this,'${safeUrlJs}')" title="Copy URL">⧉</button>`:''}
+        ${f.link?`<a class="apply-btn" href="${safeUrl}" target="_blank" rel="noopener">Apply →</a>`:`<span class="apply-btn disabled">No link</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderListView(list,el){
+  const rows=list.map(f=>{
+    const status=getStatus(f.name);
+    const isAppliedStatus=status==='Applied'||status==='Selected'||status==='Rejected';
+    const dl=getActiveDeadline(f);
+    const days=daysUntil(dl.date);
+    let dlClass='';
+    if(days!==null){if(days<0)dlClass='deadline-passed';else if(days<=3)dlClass='deadline-near';else if(days<=7)dlClass='deadline-soon'}
+    const safeUrl=(f.link||'').replace(/"/g,'&quot;');
+    const safeUrlJs=(f.link||'').replace(/'/g,"\\'");
+    const safeName=esc(f.name).replace(/'/g,"&#39;");
+    const dlSuffix=days!==null&&days>=0&&!isAppliedStatus?` (${days===0?'today':days===1?'1d':days+'d'})`:days!==null&&days<0?' (passed)':'';
+
+    let dlCell;
+    if(f.deadlines&&f.deadlines.length>1){
+      const opts=f.deadlines.map((d,i)=>{
+        const dt=d.date?new Date(d.date):null;
+        if(dt) dt.setHours(0,0,0,0);
+        const passed=dt&&dt<today;
+        const feeLbl=d.fee==null?'TBC':d.fee===0?'Free':'$'+(Number.isInteger(d.fee)?d.fee:d.fee.toFixed(2));
+        return `<option value="${i}" ${i===dl.idx?'selected':''}>${esc(d.label)}: ${fmtDate(d.date)} • ${feeLbl}${passed?'(×)':''}</option>`;
+      }).join('');
+      dlCell=`<select class="deadline-select" onchange="updateDl('${safeName}',this.value)">${opts}</select><span class="lv-deadline ${dlClass}" style="margin-left:5px;font-size:.7rem">${dlSuffix}</span>`;
+    } else {
+      dlCell=`<span class="lv-deadline ${dlClass}">${fmtDate(dl.date)}${dlSuffix}</span>`;
+    }
+
+    return `<tr class="${isAppliedStatus?'applied-row':''}">
+      <td><span class="lv-tier tier-${f.tier}">${f.tier||'?'}</span></td>
+      <td class="lv-name">${f.link?`<a href="${safeUrl}" target="_blank" rel="noopener">${esc(f.name)}</a>`:esc(f.name)}</td>
+      <td>${dlCell}</td>
+      <td class="lv-fee ${dl.fee===0?'free':''}">${feeStr(dl.fee)}</td>
+      <td>
+        <select class="lv-status" onchange="updateStatus('${safeName}',this.value)">
+          <option ${status==='Not applied'?'selected':''}>Not applied</option>
+          <option ${status==='Applied'?'selected':''}>Applied</option>
+          <option ${status==='Selected'?'selected':''}>Selected</option>
+          <option ${status==='Rejected'?'selected':''}>Rejected</option>
+          <option ${status==='Skipped'?'selected':''}>Skipped</option>
+        </select>
+      </td>
+      <td class="lv-actions">
+        ${f.link?`<button class="copy-btn" onclick="copyUrl(this,'${safeUrlJs}')" title="Copy URL">⧉</button>`:''}
+        ${f.link?`<a class="apply-btn" href="${safeUrl}" target="_blank" rel="noopener">Apply →</a>`:`<span class="apply-btn disabled">—</span>`}
+      </td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`<table class="list-table">
+    <thead><tr>
+      <th style="width:38px">Tier</th>
+      <th>Festival</th>
+      <th>Deadline</th>
+      <th>Fee</th>
+      <th>Status</th>
+      <th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+window.updateStatus=function(name,status){setStatus(name,status);renderMoney();renderCalendar();render()};
+window.updateDl=function(name,idx){setDeadlineSel(name,parseInt(idx));renderMoney();renderCalendar();render()};
+window.copyUrl=function(btn,url){copyToClipboard(url).then(()=>{const orig=btn.textContent;btn.textContent='✓';btn.classList.add('done');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('done')},1500)})};
+
+// ============= INIT =============
+document.getElementById('searchInput').addEventListener('input',e=>{searchTerm=e.target.value;render()});
+document.querySelectorAll('.chip[data-filter]').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.chip[data-filter]').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  currentFilter=c.dataset.filter;
+  render();
+}));
+
+// Restore view
+if(currentView==='list'){document.getElementById('viewBlock').classList.remove('active');document.getElementById('viewList').classList.add('active')}
+
+// URL ?vet= param support (bookmarklet)
+(function(){const p=new URLSearchParams(window.location.search);const vet=p.get('vet');if(vet){document.getElementById('bot').classList.add('open');setTimeout(()=>{askBot(vet);document.getElementById('bot').scrollIntoView({behavior:'smooth',block:'start'})},200)}})();
+
+renderMoney();
+renderCalendar();
+render();
+</script>
+</body>
+</html>
